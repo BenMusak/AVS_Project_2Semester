@@ -65,15 +65,17 @@ class LDA:
 
 def plot_data(train_, trn_targets, title):
 
-    color = ["red", "green", "blue"]
-    labels = ["SG", "SC", "LP"]
+    color = ["red", "green", "blue", "yellow"]
+    labels = ["SG", "SC", "LP", "SC_Neck"]
     for i in range(len(train_)):
         if trn_targets[i] == 1:
             plt.scatter(train_[i][0], train_[i][1], color=color[0], edgecolors="none", label=labels[0], alpha=0.8)
         elif trn_targets[i] == 2:
             plt.scatter(train_[i][0], train_[i][1], color=color[1], edgecolors="none", label=labels[1], alpha=0.8)
-        else:
+        elif trn_targets[i] == 3:
             plt.scatter(train_[i][0], train_[i][1], color=color[2], edgecolors="none", label=labels[2], alpha=0.8)
+        else:
+            plt.scatter(train_[i][0], train_[i][1], color=color[3], edgecolors="none", label=labels[3], alpha=0.8)
 
     plt.suptitle(title)
     plt.xlabel("Linear Discriminant 1")
