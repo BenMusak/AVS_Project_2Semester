@@ -26,7 +26,7 @@ def main():
     if jesper:
 
         # Remove silence from an audio files
-        #rs.remove_silence(r"C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\2. Sound_samples_collected_310323\AudioStrumming_LP.wav")
+        #rs.remove_silence(r"C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\AudioStrumming_SC_Neck.wav")
 
         # Load Audio Files
         strum_list = al.load_files_from_directories()
