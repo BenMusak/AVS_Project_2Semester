@@ -16,8 +16,8 @@ class LDA:
         # Get the mean of the dataset
         mean_overall = np.mean(data, axis=0)
         # Initialize S_W and S_B with the size of the number of features
-        SW = np.zeros((n_features, n_features)) # 784, 784
-        SB = np.zeros((n_features, n_features)) # 784, 784
+        SW = np.zeros((n_features, n_features))
+        SB = np.zeros((n_features, n_features))
         
         # Fishers LDA for multiple classes
         for c in class_labels:
@@ -65,8 +65,9 @@ class LDA:
 
 def plot_data(train_, trn_targets, title):
 
-    color = ["red", "green", "blue", "yellow"]
-    labels = ["SG", "SC", "LP", "SC_Neck"]
+    color = ["red", "green", "blue", "yellow", "black"]
+    #labels = ["SG", "SC", "SC_Neck", "SC_Fender", "LP"]
+    labels = ["SG", "SC", "LP"]
     for i in range(len(train_)):
         if trn_targets[i] == 1:
             plt.scatter(train_[i][0], train_[i][1], color=color[0], edgecolors="none", label=labels[0], alpha=0.8)
@@ -74,15 +75,17 @@ def plot_data(train_, trn_targets, title):
             plt.scatter(train_[i][0], train_[i][1], color=color[1], edgecolors="none", label=labels[1], alpha=0.8)
         elif trn_targets[i] == 3:
             plt.scatter(train_[i][0], train_[i][1], color=color[2], edgecolors="none", label=labels[2], alpha=0.8)
-        else:
+        elif trn_targets[i] == 4:
             plt.scatter(train_[i][0], train_[i][1], color=color[3], edgecolors="none", label=labels[3], alpha=0.8)
+        elif trn_targets[i] == 5:
+            plt.scatter(train_[i][0], train_[i][1], color=color[4], edgecolors="none", label=labels[4], alpha=0.8)
 
     plt.suptitle(title)
     plt.xlabel("Linear Discriminant 1")
     plt.ylabel("Linear Discriminant 2")
 
     # Create a custom legend with the same colors as the corresponding class
-    handles = [plt.Rectangle((0,0),1,1, color=color[i], alpha=0.8) for i in range(len(labels))]
+    handles = [plt.Rectangle((0,0), 1, 1, color=color[i], alpha=0.8) for i in range(len(labels))]
     plt.legend(handles, labels)
     plt.show()
 
