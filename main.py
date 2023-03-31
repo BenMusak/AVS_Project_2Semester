@@ -21,9 +21,9 @@ def extract_features(audio_file, sr, label, res_val, diff_extremes_val, display=
 
 
 def main():
-    jesper = True
+    Multifile = True
 
-    if jesper:
+    if Multifile:
 
         # Remove silence from an audio files
         #rs.remove_silence(r"C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\AudioStrumming_SC_Neck.wav")
