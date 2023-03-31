@@ -12,8 +12,10 @@ def load_files_from_directories():
         sound_files += [os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.wav')]
 
     # Loop over the sound files and load them using librosa.load
-    for sound_file in sound_files:
+    strum_list = []
+    for strum_file in strum_list:
         # Load the sound file using librosa.load
-        y, sr = librosa.load(sound_file, sr=44100, duration=2)
+        strum = librosa.load(strum_file, sr=48000, duration=2)
+        strum_list.append(strum)
 
-    return y, sr  
+    return strum_list

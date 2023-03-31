@@ -1,11 +1,61 @@
 import librosa
+import os
 import IPython.display as ipd
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 import numpy as np
 
 
-# Function to load audio file
+
+# Function to load all the sound files from the directories
+def load_files_from_directories():
+    # Set the paths to the directories containing the sound files
+    directories = [r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\1. SG_sound_samples', 
+                   r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\2. SC_sound_samples', 
+                   r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\3. LP_sound_samples']
+
+    # Loop over the directories and get a list of all the sound files in each directory
+    sound_files = [[] for i in range(len(directories))]
+    for idx, directory in enumerate (directories):
+        sound_files[idx] += [os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.wav')]
+
+    print("Directories found: " + str(len(sound_files)))
+    print("Sound files found in first directory: " + str(len(sound_files[0])))
+
+    # Loop over the sound files and load them using librosa.load
+    strum_list = [[] for i in range(len(directories))]
+    for idx, strum_file in enumerate(sound_files):
+        # Load the sound file using librosa.load
+        print("Loading files from directory: " + str(idx + 1) + " of " + str(len(directories)))
+        for i in range(len(strum_file)):
+            strum_list[idx].append(librosa.load(strum_file[i], sr=48000, duration=2))
+        print("Files loaded from directory: " + str(idx + 1) + " of " + str(len(directories)) + " - " + str(len(strum_file)) + " files loaded")
+
+    return strum_list
+
+
+def extract_mel_mfcc_multible_files(sound_files, label, display=False):
+    mfccs = []
+    mels = []
+    # Loop over the sound files and load them using librosa.load
+    print("Extracting MFCCs and Mel Spectrograms...")
+    for sound_file in sound_files:
+        # Load the sound file using librosa.load
+        mfcc = extract_MFCCs(sound_file[0], sound_file[1], res=13)
+        mfcc = np.sum(mfcc, axis=1)
+        mel = extract_Mel(sound_file[0], sound_file[1])
+        
+        if display:
+            visualize_MFCCs_Mel(np.asanyarray(mfcc), np.asanyarray(mel), sound_file[1])
+            
+        mfccs.append(mfcc)
+        mels.append(mel)
+
+    print("MFCCs shape for label {}: {}".format(label, np.asarray(mfccs).shape))
+    return mels, mfccs
+
+
+# Function to load a single audio file
 def load_audio_file(file_path):
     print("Loading Audio File...")
     signal, sr = librosa.load(file_path)
@@ -22,16 +72,12 @@ def get_samples(signal):
 
 
 def extract_MFCCs(y, sr, res=11):
-    print("Extracting MFCCs...")
     MFCCs = librosa.feature.mfcc(y=y, n_mfcc=res, sr=sr)
-    print("MFCCs shape: ", MFCCs.shape)
     return MFCCs
 
 
 def extract_Mel(y, sr, res=128):
-    print("Extracting Mel...")
     S = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=res)
-    print("Mel shape: ", S.shape)
     return S
 
 
@@ -54,6 +100,41 @@ def visualize_MFCCs_Mel(MFCCs, Mel, sr):
     plt.title('MFCCs')
     plt.show()
 
+
+def dataset_combine_multible_files(MFCCs, Mels, sr, label, display=False):
+
+    # Give the strums a label
+    labeled_parts = []
+    for i in range(0, len(MFCCs)):
+        labeled_parts.append((MFCCs[i], label))
+
+    # Visualize the non-silent parts
+    if display:
+        for i in range(0, len(MFCCs)):
+            visualize_MFCCs_Mel(MFCCs[i], Mels[i], sr)
+
+    # Split the labeled parts into training and test sets
+    train, test = train_test_split(labeled_parts, test_size=0.2)
+
+    # Split the training set into training and validation sets
+    #train, val = train_test_split(train, test_size=0.2)
+
+    # Extract the MFCCs and labels from the training, validation, and test sets
+    train_x, train_y = zip(*train)
+    #val_x, val_y = zip(*val)
+    test_x, test_y = zip(*test)
+
+    # Convert the MFCCs to numpy arrays
+    train_x = np.array(train_x)
+    #val_x = np.array(val_x)
+    test_x = np.array(test_x)
+
+    # Convert the labels to numpy arrays
+    train_y = np.array(train_y)
+    #val_y = np.array(val_y)
+    test_y = np.array(test_y)
+
+    return train_x, train_y, test_x, test_y
 
 
 def dataset_split(MFCCs, Mel, sr, label, res=100, diff_extremes=43, display=False):

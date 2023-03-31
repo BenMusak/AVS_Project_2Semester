@@ -64,20 +64,20 @@ class LDA:
 
 
 def plot_data(train_, trn_targets, title):
-
+    
     color = ["red", "green", "blue", "yellow", "black"]
     #labels = ["SG", "SC", "SC_Neck", "SC_Fender", "LP"]
     labels = ["SG", "SC", "LP"]
     for i in range(len(train_)):
-        if trn_targets[i] == 1:
+        if trn_targets[i] == 0:
             plt.scatter(train_[i][0], train_[i][1], color=color[0], edgecolors="none", label=labels[0], alpha=0.8)
-        elif trn_targets[i] == 2:
+        elif trn_targets[i] == 1:
             plt.scatter(train_[i][0], train_[i][1], color=color[1], edgecolors="none", label=labels[1], alpha=0.8)
-        elif trn_targets[i] == 3:
+        elif trn_targets[i] == 2:
             plt.scatter(train_[i][0], train_[i][1], color=color[2], edgecolors="none", label=labels[2], alpha=0.8)
-        elif trn_targets[i] == 4:
+        elif trn_targets[i] == 3:
             plt.scatter(train_[i][0], train_[i][1], color=color[3], edgecolors="none", label=labels[3], alpha=0.8)
-        elif trn_targets[i] == 5:
+        elif trn_targets[i] == 4:
             plt.scatter(train_[i][0], train_[i][1], color=color[4], edgecolors="none", label=labels[4], alpha=0.8)
 
     plt.suptitle(title)

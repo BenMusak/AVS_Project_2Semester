@@ -21,12 +21,37 @@ def extract_features(audio_file, sr, label, res_val, diff_extremes_val, display=
 
 
 def main():
-    jesper = False
+    jesper = True
 
-    # Jesper sound extractor
     if jesper:
-        input_folder = r"C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings"
-        rs.load_sound_files(input_folder)
+
+        # Remove silence from an audio files
+        #rs.remove_silence(r"C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\2. Sound_samples_collected_310323\AudioStrumming_LP.wav")
+
+        # Load Audio Files
+        strum_list = al.load_files_from_directories()
+
+        # Extract features
+        train_x, train_y, test_x, test_y = [], [], [], []
+        for label in range(len(strum_list)):
+            print("lenght of strum_list: ", len(strum_list[label]))
+            mels, mffcs = al.extract_mel_mfcc_multible_files(strum_list[label], label)
+            train_x_, train_y_, test_x_, test_y_ = al.dataset_combine_multible_files(mffcs, mels, strum_list[label], label)
+            train_x.append(train_x_)
+            train_y.append(train_y_)
+            test_x.append(test_x_)
+            test_y.append(test_y_)
+        
+        # Concatenate all the data
+        train_x = np.concatenate(train_x)
+        train_y = np.concatenate(train_y)
+        test_x = np.concatenate(test_x)
+        test_y = np.concatenate(test_y)
+
+        lda.LDA_Fishers(train_x, train_y, test_x, 2)
+
+        knn.knn_model(train_x, test_x, train_y, test_y)
+
     else:
         # Load Audio Files
         SG_audio, SG_sr = al.load_audio_file("Test_dataset/AudioStrumming_SG.wav")
