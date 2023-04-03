@@ -8,11 +8,7 @@ import numpy as np
 
 
 # Function to load all the sound files from the directories
-def load_files_from_directories():
-    # Set the paths to the directories containing the sound files
-    directories = [r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\1. SG_sound_samples', 
-                   r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\2. SC_sound_samples', 
-                   r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\3. LP_sound_samples']
+def load_files_from_directories(directories):
 
     # Loop over the directories and get a list of all the sound files in each directory
     sound_files = [[] for i in range(len(directories))]

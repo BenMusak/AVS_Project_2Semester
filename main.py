@@ -26,10 +26,21 @@ def main():
     if Multifile:
 
         # Remove silence from an audio files
-        #rs.remove_silence(r"C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\AudioStrumming_SC_Neck.wav")
+        #rs.remove_silence(r"C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\AudioStrumming_LP_Neck.wav")
+
+        # Set the paths to the directories containing the sound files
+        directories = [r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Mid', 
+                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Neck', 
+                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Bridge', 
+                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SG_Bridge', 
+                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SG_Neck', 
+                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Bridge', 
+                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Neck']
+        
+        label_names = ["SC_Mid", "SC_Neck", "SC_Bridge", "SG_Bridge", "SG_Neck", "LP_Bridge", "LP_Neck"]
 
         # Load Audio Files
-        strum_list = al.load_files_from_directories()
+        strum_list = al.load_files_from_directories(directories)
 
         # Extract features
         train_x, train_y, test_x, test_y = [], [], [], []
@@ -48,7 +59,7 @@ def main():
         test_x = np.concatenate(test_x)
         test_y = np.concatenate(test_y)
 
-        lda.LDA_Fishers(train_x, train_y, test_x, 2)
+        lda.LDA_Fishers(train_x, train_y, test_x, 2, label_names=label_names)
 
         knn.knn_model(train_x, test_x, train_y, test_y)
 
