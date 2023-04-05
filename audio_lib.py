@@ -39,7 +39,7 @@ def extract_mel_mfcc_multible_files(sound_files, label, display=False):
     print("Extracting MFCCs and Mel Spectrograms...")
     for sound_file in sound_files:
 
-        # Extract the MFCCs and Mel Spectrograms from the sound file
+        # Extract the MFCCs and Mel Spectrograms from the sound file. Sound_file[0] is the signal and sound_file[1] is the sample rate.
         mfcc = extract_MFCCs(sound_file[0], sound_file[1], res=13) #13
         mel = extract_Mel(sound_file[0], sound_file[1])
         
