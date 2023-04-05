@@ -34,21 +34,26 @@ def load_files_from_directories(directories):
 def extract_mel_mfcc_multible_files(sound_files, label, display=False):
     mfccs = []
     mels = []
+
     # Loop over the sound files and load them using librosa.load
     print("Extracting MFCCs and Mel Spectrograms...")
     for sound_file in sound_files:
-        # Load the sound file using librosa.load
+
+        # Extract the MFCCs and Mel Spectrograms from the sound file
         mfcc = extract_MFCCs(sound_file[0], sound_file[1], res=13) #13
         mel = extract_Mel(sound_file[0], sound_file[1])
         
+        # Visualize the MFCCs and Mel Spectrograms if display is True, else sum the MFCCs
         if display:
             visualize_MFCCs_Mel(np.asanyarray(mfcc), np.asanyarray(mel), sound_file[1])
         else:
             mfcc = np.sum(mfcc, axis=1)
             
+        # Append the MFCCs and Mel Spectrograms to the lists mfccs and mels respectively
         mfccs.append(mfcc)
         mels.append(mel)
 
+    # Print the shape of the MFCCs and Mel Spectrograms
     print("MFCCs shape for label {}: {}".format(label, np.asarray(mfccs).shape))
     return mels, mfccs
 
@@ -106,7 +111,7 @@ def dataset_combine_multible_files(MFCCs, Mels, sr, label, display=False):
     for i in range(0, len(MFCCs)):
         labeled_parts.append((MFCCs[i], label))
 
-    # Visualize the non-silent parts
+    # Visualize the non-silent parts if display is True
     if display:
         for i in range(0, len(MFCCs)):
             visualize_MFCCs_Mel(MFCCs[i], Mels[i], sr)

@@ -37,17 +37,26 @@ def main():
                        r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Bridge', 
                        r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Neck']
         
+        # Labels for the classes
         label_names = ["SC_Mid", "SC_Neck", "SC_Bridge", "SG_Bridge", "SG_Neck", "LP_Bridge", "LP_Neck"]
 
-        # Load Audio Files
+        # Load Audio Files from the given directories
         strum_list = al.load_files_from_directories(directories)
 
         # Extract features
         train_x, train_y, test_x, test_y = [], [], [], []
+
+        # Loop through the list of lists containing the audio files
         for label in range(len(strum_list)):
             print("lenght of strum_list: ", len(strum_list[label]))
+
+            # Extract Mek and MFCC features from the current audio file
             mels, mffcs = al.extract_mel_mfcc_multible_files(strum_list[label], label, display=False)
+
+            # Split the data into train and test data
             train_x_, train_y_, test_x_, test_y_ = al.dataset_combine_multible_files(mffcs, mels, strum_list[label], label)
+
+            # Append the data to the lists so that they can be concatenated later
             train_x.append(train_x_)
             train_y.append(train_y_)
             test_x.append(test_x_)
@@ -59,8 +68,10 @@ def main():
         test_x = np.concatenate(test_x)
         test_y = np.concatenate(test_y)
 
+        # Perform LDA on the train data
         lda.LDA_Fishers(train_x, train_y, test_x, 2, label_names=label_names)
 
+        # Perform KNN on the train and test data
         knn.knn_model(train_x, test_x, train_y, test_y)
 
     else:
