@@ -38,6 +38,13 @@ def extract_mel_mfcc_multible_files(sound_files, label, display=False):
     for sound_file in sound_files:
         # Load the sound file using librosa.load
         mfcc = extract_MFCCs(sound_file[0], sound_file[1], res=13)
+        delta_mfcc = extract_delta_MFCCs(mfcc)
+        print("delta shape: ", delta_mfcc.shape)
+        delta2_mfcc = extract_delta_MFCCs(mfcc, order=2)
+        print("delta2 shape: ", delta2_mfcc.shape)
+        comprehensive_mfccs = np.concatenate(mfcc, delta_mfcc, delta2_mfcc)
+        print("comprehensive_mfcc shape: ", comprehensive_mfccs.shape)
+
         mfcc = np.sum(mfcc, axis=1)
         mel = extract_Mel(sound_file[0], sound_file[1])
         
@@ -70,6 +77,10 @@ def get_samples(signal):
 def extract_MFCCs(y, sr, res=11):
     MFCCs = librosa.feature.mfcc(y=y, n_mfcc=res, sr=sr)
     return MFCCs
+
+def extract_delta_MFCCs(y, order=1):
+    delta_MFCCs = librosa.feature.delta(y, order)
+    return delta_MFCCs
 
 
 def extract_Mel(y, sr, res=128):
