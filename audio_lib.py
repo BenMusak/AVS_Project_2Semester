@@ -1,10 +1,11 @@
 import librosa
 import os
+import time
+import numpy as np
 import IPython.display as ipd
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-import numpy as np
-
+            
 
 
 # Function to load all the sound files from the directories
@@ -37,12 +38,13 @@ def extract_mel_mfcc_multible_files(sound_files, label, display=False):
     print("Extracting MFCCs and Mel Spectrograms...")
     for sound_file in sound_files:
         # Load the sound file using librosa.load
-        mfcc = extract_MFCCs(sound_file[0], sound_file[1], res=13)
-        mfcc = np.sum(mfcc, axis=1)
+        mfcc = extract_MFCCs(sound_file[0], sound_file[1], res=13) #13
         mel = extract_Mel(sound_file[0], sound_file[1])
         
         if display:
             visualize_MFCCs_Mel(np.asanyarray(mfcc), np.asanyarray(mel), sound_file[1])
+        else:
+            mfcc = np.sum(mfcc, axis=1)
             
         mfccs.append(mfcc)
         mels.append(mel)

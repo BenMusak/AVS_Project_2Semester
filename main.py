@@ -26,11 +26,11 @@ def main():
     if Multifile:
 
         # Remove silence from an audio files
-        #rs.remove_silence(r"C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\AudioStrumming_LP_Neck.wav")
+        #rs.remove_silence(r"C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\AudioStrumming_LP_Neck_Tone_4.wav")
 
         # Set the paths to the directories containing the sound files
         directories = [r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Mid', 
-                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Neck', 
+                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Neck',
                        r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Bridge', 
                        r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SG_Bridge', 
                        r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SG_Neck', 
@@ -46,7 +46,7 @@ def main():
         train_x, train_y, test_x, test_y = [], [], [], []
         for label in range(len(strum_list)):
             print("lenght of strum_list: ", len(strum_list[label]))
-            mels, mffcs = al.extract_mel_mfcc_multible_files(strum_list[label], label)
+            mels, mffcs = al.extract_mel_mfcc_multible_files(strum_list[label], label, display=False)
             train_x_, train_y_, test_x_, test_y_ = al.dataset_combine_multible_files(mffcs, mels, strum_list[label], label)
             train_x.append(train_x_)
             train_y.append(train_y_)

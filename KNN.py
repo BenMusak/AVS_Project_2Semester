@@ -21,6 +21,7 @@ def knn_model(x_train, x_test, y_train, y_test):
         'metric': ['euclidean', 'manhattan']
     }
 
+    print("Training and Testing Model...")
     model = GridSearchCV(KNeighborsClassifier(), grid_params, cv=5, n_jobs=-1)
     model.fit(x_train_scaled, y_train)
 
