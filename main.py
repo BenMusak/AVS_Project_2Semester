@@ -29,13 +29,13 @@ def main():
         #rs.remove_silence(r"C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\AudioStrumming_LP_Neck.wav")
 
         # Set the paths to the directories containing the sound files
-        directories = [r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Mid', 
-                       r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Neck', 
-                       r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Bridge', 
-                       r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SG_Bridge', 
-                       r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SG_Neck', 
-                       r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Bridge', 
-                       r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Neck']
+        directories = [r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Mid', 
+                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Neck', 
+                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Bridge', 
+                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SG_Bridge', 
+                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SG_Neck', 
+                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Bridge', 
+                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Neck']
         
         
         label_names = ["SC_Mid", "SC_Neck", "SC_Bridge", "SG_Bridge", "SG_Neck", "LP_Bridge", "LP_Neck"]
