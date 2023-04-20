@@ -47,6 +47,8 @@ def extract_mel_mfcc_multible_files(sound_files, label, display=False):
         
         if display:
             visualize_MFCCs_Mel(np.asanyarray(mfcc), np.asanyarray(mel), sound_file[1])
+            visualize_MFCCs_Mel(np.asanyarray(delta_mfcc), np.asanyarray(mel), sound_file[1])
+            visualize_MFCCs_Mel(np.asanyarray(delta2_mfcc), np.asanyarray(mel), sound_file[1])
             
         mfccs.append(comprehensive_mfccs)
         mels.append(mel)

@@ -26,19 +26,34 @@ def main():
     if Multifile:
 
         # Remove silence from an audio files
-        #rs.remove_silence(r"C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\AudioStrumming_LP_Neck.wav")
+        #rs.remove_silence_new_data(r"C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\Kata_MusicTribe\WAV\Individual\AudioStrumming_Supreme_SG_Neck_Open_KB.WAV")
 
         # Set the paths to the directories containing the sound files
-        directories = [r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Mid', 
-                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Neck', 
-                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Bridge', 
-                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SG_Bridge', 
-                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SG_Neck', 
-                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Bridge', 
-                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Neck']
+        #directories = [r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Mid', 
+        #               r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Neck', 
+        #               r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Bridge', 
+        #               r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SG_Bridge', 
+        #               r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SG_Neck', 
+        #               r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Bridge', 
+        #               r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Neck']
         
         
-        label_names = ["SC_Mid", "SC_Neck", "SC_Bridge", "SG_Bridge", "SG_Neck", "LP_Bridge", "LP_Neck"]
+        #label_names = ["SC_Mid", "SC_Neck", "SC_Bridge", "SG_Bridge", "SG_Neck", "LP_Bridge", "LP_Neck"]
+
+
+        #directories = [r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\All_Collected\Guitar_Models\LP', 
+        #               r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\All_Collected\Guitar_Models\SC',
+        #               r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\All_Collected\Guitar_Models\SG',
+        #               r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\All_Collected\Guitar_Models\TC']
+        
+        #label_names = ["LP", "SC", "SG", "TC"]
+
+
+        directories = [r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\All_Collected\Strummer_Name\Jacobo',
+                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\All_Collected\Strummer_Name\Kata',
+                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\All_Collected\Strummer_Name\Vini']
+        
+        label_names = ["Jacobo", "Kata", "Vini"]
 
         # Load Audio Files
         strum_list = al.load_files_from_directories(directories)
@@ -47,7 +62,7 @@ def main():
         train_x, train_y, test_x, test_y = [], [], [], []
         for label in range(len(strum_list)):
             print("lenght of strum_list: ", len(strum_list[label]))
-            mels, mffcs = al.extract_mel_mfcc_multible_files(strum_list[label], label)
+            mels, mffcs = al.extract_mel_mfcc_multible_files(strum_list[label], label, display=False)
             train_x_, train_y_, test_x_, test_y_ = al.dataset_combine_multible_files(mffcs, mels, strum_list[label], label)
             train_x.append(train_x_)
             train_y.append(train_y_)
