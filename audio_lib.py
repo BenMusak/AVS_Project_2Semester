@@ -95,7 +95,7 @@ def mean_mfccs(x):
 def visualize_MFCCs_Mel(MFCCs, Mel, sr):
     print("Visualizing MFCCs...")
     fig, ax = plt.subplots(nrows=2, sharex=True)
-    img_mel = librosa.display.specshow(librosa.power_to_db(Mel, ref=np.max),
+    img_mel = librosa.display.specshow(Mel,
                                x_axis='time', y_axis='mel', fmax=8000,
                                ax=ax[0])
     fig.colorbar(img_mel, ax=[ax[0]])

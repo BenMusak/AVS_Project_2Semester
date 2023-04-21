@@ -10,6 +10,7 @@ def knn_model(x_train, x_test, y_train, y_test):
     print(f'Observation: \n{x_train[0]}')
     print(f'Labels: {y_train}')
 
+    print("Scaling the data...")
     scaler = StandardScaler()
     scaler.fit(x_train)
     x_train_scaled = scaler.transform(x_train)
@@ -21,6 +22,7 @@ def knn_model(x_train, x_test, y_train, y_test):
         'metric': ['euclidean', 'manhattan']
     }
 
+    print("Training the model...")
     model = GridSearchCV(KNeighborsClassifier(), grid_params, cv=5, n_jobs=-1)
     model.fit(x_train_scaled, y_train)
 
