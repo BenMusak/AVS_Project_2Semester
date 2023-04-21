@@ -1,22 +1,35 @@
-import pyaudio
-import wave
+import audio_lib as al
+import dataset as ds
+import model as m
 
-pyAud = pyaudio.PyAudio()
+# labels
+label_guitar_model = {
+    0 : 'LP',
+    1 : 'SC', 
+    2 : 'SG',
+    3 : 'TC'
+    }
 
-# to find input of SOUNDCARD
-# 'Analogue 1 + 2 (Focusrite USB A'
-# 'Analogue 1 + 2 (wc4800_8211)'
-DEVICE_NAME = 'Analogue 1 + 2 (Focusrite USB A'
-foundUSBMic = False
-dev_index = -1
+# create dataset
+dirs = [
+    r'C:\Users\Kata\OneDrive - Aalborg Universitet\CE8-DESKTOP-T44IC5T\Project\2. Data\1. Sound_samples\5. Full_recordings\All_Collected\Guitar_Models\LP', 
+    r'C:\Users\Kata\OneDrive - Aalborg Universitet\CE8-DESKTOP-T44IC5T\Project\2. Data\1. Sound_samples\5. Full_recordings\All_Collected\Guitar_Models\SC',
+    r'C:\Users\Kata\OneDrive - Aalborg Universitet\CE8-DESKTOP-T44IC5T\Project\2. Data\1. Sound_samples\5. Full_recordings\All_Collected\Guitar_Models\SG', 
+    r'C:\Users\Kata\OneDrive - Aalborg Universitet\CE8-DESKTOP-T44IC5T\Project\2. Data\1. Sound_samples\5. Full_recordings\All_Collected\Guitar_Models\TC'
+    ]
 
-for i in range(pyAud.get_device_count()):
-    dev = pyAud.get_device_info_by_index(i)
-    print((i, dev['name'], dev['maxInputChannels']))
-    
-    if dev['name'] == DEVICE_NAME:
-        foundUSBMic = True
-        dev_index = i 
+audio = ds.Dataset()
+audio.create_dataset(dirs)
+audio.scale() # scale dataset
 
-print(foundUSBMic)
-print(dev_index)
+# model and training
+model = m.KNN()
+model.train(audio.X_train, audio.y_train)
+
+# prediction
+print(audio.X_test[0])
+y_pred = model.predict([audio.X_test[0]])
+
+y_true = audio.y_test[0]
+print(f'Predicted label : {y_pred[0]} - {label_guitar_model[y_pred[0]]}' )
+print(f'True label : {y_true} - {label_guitar_model[y_true]}')
