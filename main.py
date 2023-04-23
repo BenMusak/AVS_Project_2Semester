@@ -34,7 +34,7 @@ def main():
         knn.knn_model(train_x, test_x, train_y, test_y)
 
         exit()
-
+ 
         directories = [r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\All_Collected\Strummer_Name\Jacobo',
                        r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\All_Collected\Strummer_Name\Kata',
                        r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\All_Collected\Strummer_Name\Vini']

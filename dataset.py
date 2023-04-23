@@ -64,7 +64,7 @@ def extract_delta_MFCCs(y, order):
     return delta_MFCCs
 
 
-def convert_to_mfcc(data):
+def convert_to_mfcc(data, dim_reduction=False):
     mfccs = []
     print("Converting to MFCCs...")
     for y in data:
@@ -74,7 +74,12 @@ def convert_to_mfcc(data):
         mfcc_delta = extract_delta_MFCCs(mfcc, 1)
         mfcc_delta2 = extract_delta_MFCCs(mfcc, 2)
         comprehensive_mfccs = np.concatenate([mfcc, mfcc_delta, mfcc_delta2])
-        #comprehensive_mfccs = np.sum(comprehensive_mfccs, axis=1)
+
+        if dim_reduction:
+            comprehensive_mfccs = np.sum(comprehensive_mfccs, axis=1)
+        else:
+            comprehensive_mfccs = reshape_data(comprehensive_mfccs)
+
         mfccs.append(comprehensive_mfccs)
     return mfccs
 
@@ -98,7 +103,6 @@ def visualize_MFCCs_Mel(MFCCs, Mel, sr):
 def create_dataset(data_path, label_path, test_split=0.2):
     X, y = load_data(data_path, label_path)
     mfccs = convert_to_mfcc(X)
-    reshaped = reshape_data(mfccs)
-    X_train, X_test, y_train, y_test = split_dataset(reshaped, y, test_split)
+    X_train, X_test, y_train, y_test = split_dataset(mfccs, y, test_split)
 
     return X_train, X_test, y_train, y_test
