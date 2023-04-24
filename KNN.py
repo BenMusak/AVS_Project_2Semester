@@ -28,3 +28,5 @@ def knn_model(x_train, x_test, y_train, y_test):
 
     y_predict = model.predict(x_test_scaled)
     print(f'Confusion Matrix: \n{confusion_matrix(y_predict, y_test)}')
+
+    return model
