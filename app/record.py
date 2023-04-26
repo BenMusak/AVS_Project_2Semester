@@ -20,7 +20,7 @@ def find_input_device(pyAud):
 
     for i in range(pyAud.get_device_count()):
         dev = pyAud.get_device_info_by_index(i)
-        #print((i, dev['name'], dev['maxInputChannels']))
+        print((i, dev['name'], dev['maxInputChannels']))
     
         if dev['name'] == DEVICE_NAME:
             foundDevice = True
@@ -76,4 +76,4 @@ def record_audio():
     #aud_data = read(WAVE_FILENAME)
     #aud_data = np.array(aud_data[1],dtype=float)
 
-    #return signal, sr
+    #return aud_data
