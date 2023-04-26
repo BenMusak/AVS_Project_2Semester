@@ -1,14 +1,11 @@
-# convert audio file '.wav' to 
 import librosa
 import numpy as np
 import joblib
 
-WAVE_PATH = "record/output.wav"
-MODEL_PATH = "models/KNN_model.sav"
 
-def load_file():
+def load_file(wav_path):
     try:   
-        signal, sr = librosa.load(WAVE_PATH)
+        signal, sr = librosa.load(wav_path)
         return signal, sr
     except:
         print("File not found.")
@@ -28,8 +25,8 @@ def convert(y, sr):
 
     return features
 
-def load_model():
-    return joblib.load(MODEL_PATH)
+def load_model(model_path):
+    return joblib.load(model_path)
 
-y, sr = load_file()
-features = convert(y, sr)
+#y, sr = load_file(WAVE_PATH)
+#features = convert(y, sr)

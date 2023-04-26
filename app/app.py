@@ -2,6 +2,7 @@ import streamlit as st
 import dataset as ds
 import record as r
 import utils
+import remove_silence as rs
 
 # containers
 header = st.container() # title
@@ -9,7 +10,9 @@ record = st.container() # record audio and show audio wave
 clf = st.container() # results of classifications
 
 CLASSIFY = False # doing classification
-model = utils.load_model() #load KNN model
+MODEL_PATH = r"AVS_Project_2Semester\models\KNN_model.sav"
+model = utils.load_model(MODEL_PATH) #load KNN model
+WAVE_PATH = r"C:\Users\Benja\Documents\Skole\AI-Vision-Sound\8th_Semester\Project\code\AVS_Project_2Semester\record\output.wav"
 
 # label for dataset
 label_guitar_model = {
@@ -29,8 +32,11 @@ with record:
     
     rec_button = st.button('Record', key='audio-rec', on_click=r.record_audio())
     st.write(rec_button) # TODO : comment out in the end
-    
-    audio_data, sr = utils.load_file()
+
+    rs.remove_silence_from_single_file(WAVE_PATH)
+
+    audio_data, sr = utils.load_file(WAVE_PATH)
+
 
     # show audio wave if record button was pressed
     if rec_button:
