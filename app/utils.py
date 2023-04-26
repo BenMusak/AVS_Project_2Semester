@@ -12,13 +12,17 @@ def load_file(wav_path):
         return None, None
 
 def convert(y, sr):
-    mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
+
+    trimmed = librosa.util.fix_length(data=y, size=int(sr * 2))
+
+    mfcc = librosa.feature.mfcc(y=trimmed, sr=sr, n_mfcc=13)
     delta_mfcc = librosa.feature.delta(mfcc, order=1)
     delta2_mfcc = librosa.feature.delta(mfcc, order=2)
     
+    print(len(mfcc))
+
     all_mfcc = np.concatenate([mfcc, delta_mfcc, delta2_mfcc])
     features = np.sum(all_mfcc, axis=1)
-    
     
     features = features.reshape(1, -1)
     print(features.shape)

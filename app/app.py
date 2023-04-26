@@ -17,9 +17,11 @@ WAVE_PATH = r"C:\Users\Benja\Documents\Skole\AI-Vision-Sound\8th_Semester\Projec
 # label for dataset
 label_guitar_model = {
     0 : 'Les Paul',
-    1 : 'StratoCaster', 
-    2 : 'Solid Guitar',
-    3 : 'TeleCaster'
+    1 : 'Solid Guitar', 
+    2 : 'Stratocaster',
+    3 : 'TeleCaster',
+    4 : 'TeleCaster_Hum',
+    5 : 'Unkown'
     }
 
 #################################
@@ -54,6 +56,8 @@ with clf:
         
         # make kNN prediction
         y_pred = model.predict(features)
+        print(y_pred)
+        print(y_pred[0])
         y_label = label_guitar_model[y_pred[0]]
         st.metric(label="Class", value=y_label)
         
