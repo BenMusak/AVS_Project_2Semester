@@ -3,6 +3,8 @@ import KNN as knn
 import numpy as np
 import LDA as lda
 import remove_silence as rs
+import utils
+import os
 
 
 
@@ -24,18 +26,18 @@ def main():
     Multifile = True
 
     if Multifile:
-
         # Remove silence from an audio files
         #rs.remove_silence(r"C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\AudioStrumming_LP_Neck_Tone_4.wav")
 
         # Set the paths to the directories containing the sound files
-        directories = [r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Mid', 
-                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Neck',
-                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Bridge', 
-                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SG_Bridge', 
-                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\SG_Neck', 
-                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Bridge', 
-                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Neck']
+        directories = [r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - Project\2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Mid', 
+                       r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - Project\2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Neck'] 
+                    #    r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - Project\2. Data\1. Sound_samples\6. Guitar_same_classes\SC_Bridge', 
+                    #    r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - Project\2. Data\1. Sound_samples\6. Guitar_same_classes\SG_Bridge', 
+                    #    r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - Project\2. Data\1. Sound_samples\6. Guitar_same_classes\SG_Neck', 
+                    #    r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - Project\2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Bridge', 
+                    #    r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - Project\2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Neck']
+        
         
         # Labels for the classes
         label_names = ["SC_Mid", "SC_Neck", "SC_Bridge", "SG_Bridge", "SG_Neck", "LP_Bridge", "LP_Neck"]
@@ -71,8 +73,14 @@ def main():
         # Perform LDA on the train data
         lda.LDA_Fishers(train_x, train_y, test_x, 2, label_names=label_names)
 
-        # Perform KNN on the train and test data
-        knn.knn_model(train_x, test_x, train_y, test_y)
+        model = knn.knn_model(train_x, test_x, train_y, test_y)
+
+        # Save the model 
+        file_path = utils.save_model(model)
+        # Load the model
+        loaded_model = utils.load_model(file_path)
+        print("loaded model: ", loaded_model)
+
 
     else:
         # Load Audio Files
@@ -102,7 +110,7 @@ def main():
         train_lda, test_lda = lda.LDA_Fishers(train_x, train_y, test_x, 2)
 
         # Run KNN model on dataset
-        knn.knn_model(train_x, test_x, train_y, test_y)
+        model = knn.knn_model(train_x, test_x, train_y, test_y)
 
 
 if __name__ == "__main__":
