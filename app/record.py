@@ -2,6 +2,7 @@ import pyaudio
 import wave
 from scipy.io.wavfile import read
 import numpy as np
+import librosa
 
 CHUNK = 1024
 FORMAT = pyaudio.paInt16
@@ -19,7 +20,7 @@ def find_input_device(pyAud):
 
     for i in range(pyAud.get_device_count()):
         dev = pyAud.get_device_info_by_index(i)
-        print((i, dev['name'], dev['maxInputChannels']))
+        #print((i, dev['name'], dev['maxInputChannels']))
     
         if dev['name'] == DEVICE_NAME:
             foundDevice = True
@@ -43,7 +44,6 @@ def record_audio():
     
     foundDevice = True
     foundDevice, dev_index = find_input_device(pyAud)
-    #foundDevice = True
     
     if not foundDevice:
         print('Cannot record audio')
@@ -72,14 +72,8 @@ def record_audio():
     
     create_wav(pyAud, frames)
 
-    aud_data = read(WAVE_FILENAME)
-    aud_data = data = np.array(aud_data[1],dtype=float)
+    #signal, sr = librosa.load(WAVE_FILENAME)
+    #aud_data = read(WAVE_FILENAME)
+    #aud_data = np.array(aud_data[1],dtype=float)
 
-    return aud_data
-
-
-#p = pyaudio.PyAudio()
-#dev, i = find_input_device(p)
-
-#data = record_audio()
-#print(data)
+    #return signal, sr
