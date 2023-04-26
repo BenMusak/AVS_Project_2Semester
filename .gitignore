@@ -2,3 +2,6 @@
 __pycache__/
 audio_files_test/
 Test_dataset/
+
+app/record
+app/__pycache__

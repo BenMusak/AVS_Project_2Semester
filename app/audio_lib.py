@@ -1,12 +1,7 @@
 import librosa
 import os
-import time
 import numpy as np
-import IPython.display as ipd
-import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-            
-
 
 # Function to load all the sound files from the directories
 def load_files_from_directories(directories):
@@ -39,23 +34,14 @@ def extract_mel_mfcc_multible_files(sound_files, label, display=False):
     print("Extracting MFCCs and Mel Spectrograms...")
     for sound_file in sound_files:
 
-        # Load the sound file using librosa.load
-        mfcc = extract_MFCCs(sound_file[0], sound_file[1], res=13)
-        delta_mfcc = extract_delta_MFCCs(mfcc, order=1)
-        delta2_mfcc = extract_delta_MFCCs(mfcc, order=2)
-        comprehensive_mfccs = np.concatenate([mfcc, delta_mfcc, delta2_mfcc])
-
-        comprehensive_mfccs = np.sum(comprehensive_mfccs, axis=1)
+        # Extract the MFCCs and Mel Spectrograms from the sound file. Sound_file[0] is the signal and sound_file[1] is the sample rate.
+        mfcc = extract_MFCCs(sound_file[0], sound_file[1], res=13) #13
         mel = extract_Mel(sound_file[0], sound_file[1])
         
-        # Visualize the MFCCs and Mel Spectrograms if display is True, else sum the MFCCs
-        if display:
-            visualize_MFCCs_Mel(np.asanyarray(mfcc), np.asanyarray(mel), sound_file[1])
-        else:
-            mfcc = np.sum(mfcc, axis=1)
-            
-
-        mfccs.append(comprehensive_mfccs)
+        mfcc = np.sum(mfcc, axis=1)
+        
+        # Append the MFCCs and Mel Spectrograms to the lists mfccs and mels respectively
+        mfccs.append(mfcc)
         mels.append(mel)
 
     # Print the shape of the MFCCs and Mel Spectrograms
@@ -70,10 +56,6 @@ def load_audio_file(file_path):
     return signal, sr
 
 
-def play_audio_file(y, sr):
-    ipd.Audio(y, rate=sr)
-
-
 def get_samples(signal):
     print(signal.shape)
     return signal.shape[0]
@@ -84,11 +66,6 @@ def extract_MFCCs(y, sr, res=11):
     return MFCCs
 
 
-def extract_delta_MFCCs(y, order):
-    delta_MFCCs = librosa.feature.delta(y, order=order)
-    return delta_MFCCs
-
-
 def extract_Mel(y, sr, res=128):
     S = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=res)
     return S
@@ -97,34 +74,12 @@ def extract_Mel(y, sr, res=128):
 def mean_mfccs(x):
     return [np.mean(feature) for feature in librosa.feature.mfcc(x)]
 
-
-def visualize_MFCCs_Mel(MFCCs, Mel, sr):
-    print("Visualizing MFCCs...")
-    fig, ax = plt.subplots(nrows=2, sharex=True)
-    img_mel = librosa.display.specshow(librosa.power_to_db(Mel, ref=np.max),
-                               x_axis='time', y_axis='mel', fmax=8000,
-                               ax=ax[0])
-    fig.colorbar(img_mel, ax=[ax[0]])
-    ax[0].set(title='Mel spectrogram')
-    ax[0].label_outer()
-    img_MFCCs = librosa.display.specshow(MFCCs, x_axis='time', sr=sr)
-    fig.colorbar(img_MFCCs, ax=[ax[1]])
-    ax[1].set(title='MFCC')
-    plt.title('MFCCs')
-    plt.show()
-
-
 def dataset_combine_multible_files(MFCCs, Mels, sr, label, display=False):
 
     # Give the strums a label
     labeled_parts = []
     for i in range(0, len(MFCCs)):
         labeled_parts.append((MFCCs[i], label))
-
-    # Visualize the non-silent parts if display is True
-    if display:
-        for i in range(0, len(MFCCs)):
-            visualize_MFCCs_Mel(MFCCs[i], Mels[i], sr)
 
     # Split the labeled parts into training and test sets
     train, test = train_test_split(labeled_parts, test_size=0.2)
@@ -205,10 +160,6 @@ def dataset_split(MFCCs, Mel, sr, label, res=100, diff_extremes=43, display=Fals
     print("Strums:" + str(len(strums_list)))
     #print("One strum:" + str(strums_list[0]))
     print("All parts:" + str(len(MFCCs[1])))
-
-    # Visualize the non-silent parts
-    if display:
-        visualize_MFCCs_Mel(MFCCs[:, check_index], Mel[:, check_index], sr)
 
     # Split the labeled parts into training and test sets
     train, test = train_test_split(labeled_parts, test_size=0.2)
