@@ -39,8 +39,13 @@ def extract_mel_mfcc_multible_files(sound_files, label, display=False):
     print("Extracting MFCCs and Mel Spectrograms...")
     for sound_file in sound_files:
 
-        # Extract the MFCCs and Mel Spectrograms from the sound file. Sound_file[0] is the signal and sound_file[1] is the sample rate.
-        mfcc = extract_MFCCs(sound_file[0], sound_file[1], res=13) #13
+        # Load the sound file using librosa.load
+        mfcc = extract_MFCCs(sound_file[0], sound_file[1], res=13)
+        delta_mfcc = extract_delta_MFCCs(mfcc, order=1)
+        delta2_mfcc = extract_delta_MFCCs(mfcc, order=2)
+        comprehensive_mfccs = np.concatenate([mfcc, delta_mfcc, delta2_mfcc])
+
+        comprehensive_mfccs = np.sum(comprehensive_mfccs, axis=1)
         mel = extract_Mel(sound_file[0], sound_file[1])
         
         # Visualize the MFCCs and Mel Spectrograms if display is True, else sum the MFCCs
@@ -49,8 +54,8 @@ def extract_mel_mfcc_multible_files(sound_files, label, display=False):
         else:
             mfcc = np.sum(mfcc, axis=1)
             
-        # Append the MFCCs and Mel Spectrograms to the lists mfccs and mels respectively
-        mfccs.append(mfcc)
+
+        mfccs.append(comprehensive_mfccs)
         mels.append(mel)
 
     # Print the shape of the MFCCs and Mel Spectrograms
@@ -77,6 +82,11 @@ def get_samples(signal):
 def extract_MFCCs(y, sr, res=11):
     MFCCs = librosa.feature.mfcc(y=y, n_mfcc=res, sr=sr)
     return MFCCs
+
+
+def extract_delta_MFCCs(y, order):
+    delta_MFCCs = librosa.feature.delta(y, order=order)
+    return delta_MFCCs
 
 
 def extract_Mel(y, sr, res=128):
