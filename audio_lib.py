@@ -25,7 +25,10 @@ def load_files_from_directories(directories):
         # Load the sound file using librosa.load
         print("Loading files from directory: " + str(idx + 1) + " of " + str(len(directories)))
         for i in range(len(strum_file)):
-            strum_list[idx].append(librosa.load(strum_file[i], sr=48000, duration=2))
+            audio_file = librosa.load(strum_file[i], sr=48000, duration=2)
+            normalized = np.array(librosa.util.normalize(audio_file[0]))
+            strum_list[idx].append((normalized, audio_file[1]))
+            #strum_list[idx].append(librosa.load(strum_file[i], sr=48000, duration=2))
         print("Files loaded from directory: " + str(idx + 1) + " of " + str(len(directories)) + " - " + str(len(strum_file)) + " files loaded")
 
     return strum_list

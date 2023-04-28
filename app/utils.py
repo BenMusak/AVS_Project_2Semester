@@ -1,4 +1,5 @@
 import librosa
+import matplotlib.pyplot as plt
 import numpy as np
 import joblib
 
@@ -6,10 +7,12 @@ import joblib
 def load_file(wav_path):
     try:   
         signal, sr = librosa.load(wav_path)
-        return signal, sr
+        normalized = np.array(librosa.util.normalize(signal))
+        return normalized, sr
     except:
         print("File not found.")
         return None, None
+
 
 def convert(y, sr):
 
@@ -21,6 +24,8 @@ def convert(y, sr):
     
     print(len(mfcc))
 
+    visualize_MFCCs_Mel(mfcc, librosa.feature.melspectrogram(y=trimmed, sr=sr, n_mels=128, fmax=8000), sr)
+
     all_mfcc = np.concatenate([mfcc, delta_mfcc, delta2_mfcc])
     features = np.sum(all_mfcc, axis=1)
     
@@ -28,6 +33,23 @@ def convert(y, sr):
     print(features.shape)
 
     return features
+
+
+def visualize_MFCCs_Mel(MFCCs, Mel, sr):
+    print("Visualizing MFCCs...")
+    fig, ax = plt.subplots(nrows=2, sharex=True)
+    img_mel = librosa.display.specshow(librosa.power_to_db(Mel, ref=np.max),
+                               x_axis='time', y_axis='mel', fmax=8000,
+                               ax=ax[0])
+    fig.colorbar(img_mel, ax=[ax[0]])
+    ax[0].set(title='Mel spectrogram')
+    ax[0].label_outer()
+    img_MFCCs = librosa.display.specshow(MFCCs, x_axis='time', sr=sr)
+    fig.colorbar(img_MFCCs, ax=[ax[1]])
+    ax[1].set(title='MFCC')
+    plt.title('MFCCs')
+    plt.show()
+
 
 def load_model(model_path):
     return joblib.load(model_path)

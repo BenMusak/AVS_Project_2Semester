@@ -3,6 +3,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
 
 def knn_model(x_train, x_test, y_train, y_test):
 
@@ -32,6 +33,9 @@ def knn_model(x_train, x_test, y_train, y_test):
     print(f'Model Score: {model.score(x_test_scaled, y_test)}')
 
     y_predict = model.predict(x_test_scaled)
-    print(f'Confusion Matrix: \n{confusion_matrix(y_predict, y_test)}')
+    print(f'Confusion Matrix For Test Data: \n{confusion_matrix(y_predict, y_test)}')
+    print(f'Accuracy Score for Test Data: {accuracy_score(y_predict, y_test)}')
+
+    print("Accuracy: ", model.best_score_)
 
     return model
