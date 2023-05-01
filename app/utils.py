@@ -2,6 +2,7 @@ import librosa
 import matplotlib.pyplot as plt
 import numpy as np
 import joblib
+from LDA import LDA
 
 
 def load_file(wav_path):
@@ -21,16 +22,14 @@ def convert(y, sr):
     mfcc = librosa.feature.mfcc(y=trimmed, sr=sr, n_mfcc=13)
     delta_mfcc = librosa.feature.delta(mfcc, order=1)
     delta2_mfcc = librosa.feature.delta(mfcc, order=2)
-    
-    print(len(mfcc))
 
     visualize_MFCCs_Mel(mfcc, librosa.feature.melspectrogram(y=trimmed, sr=sr, n_mels=128, fmax=8000), sr)
 
     all_mfcc = np.concatenate([mfcc, delta_mfcc, delta2_mfcc])
     features = np.sum(all_mfcc, axis=1)
     
-    features = features.reshape(1, -1)
-    print(features.shape)
+    #features = features.reshape(1, -1)
+    #print(features.shape)
 
     return features
 
@@ -51,8 +50,10 @@ def visualize_MFCCs_Mel(MFCCs, Mel, sr):
     plt.show()
 
 
-def load_model(model_path):
-    return joblib.load(model_path)
+def load_model(model_path_KNN, model_path_LDA):
+    model_KNN = joblib.load(model_path_KNN)
+    model_LDA = joblib.load(model_path_LDA)
+    return model_KNN, model_LDA
 
 #y, sr = load_file(WAVE_PATH)
 #features = convert(y, sr)

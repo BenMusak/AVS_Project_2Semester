@@ -61,53 +61,49 @@ class LDA:
     def transform(self, X):
         # project data onto linear discriminants
         return np.dot(X, self.linear_discriminants.T)
-
-
-def plot_data(train_, trn_targets, title, labels):
     
-    color = ["red", "green", "blue", "yellow", "black", "orange", "purple"]
+
+def plot_data(train_, trn_targets, title, labels, new_data):
+    
+    fig, ax = plt.subplots()
+
+    color = ["red", "green", "blue", "yellow", "black", "orange"]
     for i in range(len(train_)):
         if trn_targets[i] == 0:
-            plt.scatter(train_[i][0], train_[i][1], color=color[0], edgecolors="none", label=labels[0], alpha=0.8)
+            ax.scatter(train_[i][0], train_[i][1], color=color[0], edgecolors="none", label=labels[0], alpha=0.8)
         elif trn_targets[i] == 1:
-            plt.scatter(train_[i][0], train_[i][1], color=color[1], edgecolors="none", label=labels[1], alpha=0.8)
+            ax.scatter(train_[i][0], train_[i][1], color=color[1], edgecolors="none", label=labels[1], alpha=0.8)
         elif trn_targets[i] == 2:
-            plt.scatter(train_[i][0], train_[i][1], color=color[2], edgecolors="none", label=labels[2], alpha=0.8)
+            ax.scatter(train_[i][0], train_[i][1], color=color[2], edgecolors="none", label=labels[2], alpha=0.8)
         elif trn_targets[i] == 3:
-            plt.scatter(train_[i][0], train_[i][1], color=color[3], edgecolors="none", label=labels[3], alpha=0.8)
+            ax.scatter(train_[i][0], train_[i][1], color=color[3], edgecolors="none", label=labels[3], alpha=0.8)
         elif trn_targets[i] == 4:
-            plt.scatter(train_[i][0], train_[i][1], color=color[4], edgecolors="none", label=labels[4], alpha=0.8)
+            ax.scatter(train_[i][0], train_[i][1], color=color[4], edgecolors="none", label=labels[4], alpha=0.8)
         elif trn_targets[i] == 5:
-            plt.scatter(train_[i][0], train_[i][1], color=color[5], edgecolors="none", label=labels[5], alpha=0.8)
-        elif trn_targets[i] == 6:
-            plt.scatter(train_[i][0], train_[i][1], color=color[6], edgecolors="none", label=labels[6], alpha=0.8)
+            ax.scatter(train_[i][0], train_[i][1], color=color[5], edgecolors="none", label=labels[5], alpha=0.8)
 
-    plt.suptitle(title)
+    # Plot the new data
+    print(new_data.shape)
+    print(train_.shape)
+    ax.scatter(new_data[0], new_data[1], color="purple", edgecolors="none", label="New Data", alpha=0.8, marker="x", s=100)
+
+    fig.suptitle(title)
     plt.xlabel("Linear Discriminant 1")
     plt.ylabel("Linear Discriminant 2")
 
     # Create a custom legend with the same colors as the corresponding class
     handles = [plt.Rectangle((0,0), 1, 1, color=color[i], alpha=0.8) for i in range(len(labels))]
-    plt.legend(handles, labels)
-    plt.show()
+    fig.legend(handles, labels.values())
+    fig.show()
+
+    return fig
 
 
-def LDA_Fishers(trainset, trn_targets, test, n_components, label_names=["default", "default", "default", "default", "default"]):
-    lda = LDA(n_components)
-    lda.fit(trainset, trn_targets)
-
-    train_ =[]
-    train_tgt = []
-    test_ = []
-    for i in range(len(trainset)):
-        train_.append(lda.transform(trainset[i]))
-        train_tgt.append(trn_targets[i])
-    for i in range(len(test)):
-        test_.append(lda.transform(test[i][0]))
-    if n_components == 2:
-        plot_data(train_, train_tgt, "LDA Fisher's", label_names)
-
-    # save the data
-    np.savez("LDA_Fishers_train", train_=train_, train_tgt=train_tgt, label_names=label_names)
-    
-    return lda
+def load_dataset(dataset_path):
+    # Load the numpy dataset
+    dataset = np.load(dataset_path)
+    # Split the dataset into features and targets
+    print(dataset.files)
+    features = dataset['train_']
+    targets = dataset['train_tgt']
+    return features, targets

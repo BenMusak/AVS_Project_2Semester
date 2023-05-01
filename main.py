@@ -70,15 +70,18 @@ def main():
         test_x = np.concatenate(test_x)
         test_y = np.concatenate(test_y)
 
-        # Perform LDA on the train data
-        lda.LDA_Fishers(train_x, train_y, test_x, 2, label_names=label_names)
+        # Save Dataset
+        al.save_dataset(train_x, train_y, test_x, test_y)
 
-        model = knn.knn_model(train_x, test_x, train_y, test_y)
+        # Perform LDA on the train data
+        model_LDA = lda.LDA_Fishers(train_x, train_y, test_x, 2, label_names=label_names)
+
+        model_KNN = knn.knn_model(train_x, test_x, train_y, test_y)
 
         # Save the model 
-        file_path = utils.save_model(model)
+        file_path_KNN, file_path_LDA = utils.save_model(model_KNN, model_LDA)
         # Load the model
-        loaded_model = utils.load_model(file_path)
+        loaded_model = utils.load_model(file_path_KNN)
         print("loaded model: ", loaded_model)
 
 
