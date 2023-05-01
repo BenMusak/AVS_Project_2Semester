@@ -2,6 +2,7 @@ import audio_lib as al
 import KNN as knn
 import numpy as np
 import LDA as lda
+import SVM as svm
 #import remove_silence as rs
 import utils
 import os
@@ -30,11 +31,12 @@ def main():
         #rs.remove_silence(r"C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\AudioStrumming_LP_Neck_Tone_4.wav")
 
         # Set the paths to the directories containing the sound files
-        directories = [r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\All_data\WAV\Les_Paul_(LP)', 
-                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\All_data\WAV\Solid_Guitar_(SG)',
-                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\All_data\WAV\Stratocaster_(SC)', 
-                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\All_data\WAV\Telecaster_(TC)', 
-                       r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\All_data\WAV\Telecaster_humbucker_(TC)']
+        user = os.getlogin()
+        directories = ["C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Les_Paul_(LP)".format(user), 
+                       "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Solid_Guitar_(SG)".format(user),
+                       "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Stratocaster_(SC)".format(user), 
+                       "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Telecaster_(TC)".format(user), 
+                       "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Telecaster_humbucker_(TC)".format(user)]
                     #    r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - Project\2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Bridge', 
                     #    r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - Project\2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Neck'
         
@@ -78,8 +80,10 @@ def main():
 
         model_KNN = knn.knn_model(train_x, test_x, train_y, test_y)
 
+        model_SVM = svm.svm_model(train_x, test_x, train_y, test_y)
+
         # Save the model 
-        file_path_KNN, file_path_LDA = utils.save_model(model_KNN, model_LDA)
+        file_path_KNN, file_path_LDA, file_path_SVM = utils.save_model(model_KNN, model_LDA, model_SVM)
         # Load the model
         loaded_model = utils.load_model(file_path_KNN)
         print("loaded model: ", loaded_model)
