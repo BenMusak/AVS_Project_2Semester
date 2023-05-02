@@ -1,3 +1,4 @@
+import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
@@ -14,6 +15,9 @@ def knn_model(x_train, x_test, y_train, y_test):
     # Scale the data to be between -1 and 1
     scaler = StandardScaler()
     scaler.fit(x_train)
+
+    # Save the scaler
+    joblib.dump(scaler, 'scaler.pkl')
 
     # Transform the training and testing data
     x_train_scaled = scaler.transform(x_train)

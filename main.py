@@ -76,7 +76,7 @@ def main():
         al.save_dataset(train_x, train_y, test_x, test_y)
 
         # Perform LDA on the train data
-        model_LDA = lda.LDA_Fishers(train_x, train_y, test_x, 2, label_names=label_names)
+        model_LDA = lda.LDA_Fishers(train_x, train_y, test_x, 3, label_names=label_names)
 
         model_KNN = knn.knn_model(train_x, test_x, train_y, test_y)
 

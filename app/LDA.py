@@ -70,22 +70,22 @@ def plot_data(train_, trn_targets, title, labels, new_data):
     color = ["red", "green", "blue", "yellow", "black", "orange"]
     for i in range(len(train_)):
         if trn_targets[i] == 0:
-            ax.scatter(train_[i][0], train_[i][1], color=color[0], edgecolors="none", label=labels[0], alpha=0.8)
+            ax.scatter(train_[i][0], train_[i][1], train_[i][2], color=color[0], edgecolors="none", label=labels[0], alpha=0.8)
         elif trn_targets[i] == 1:
-            ax.scatter(train_[i][0], train_[i][1], color=color[1], edgecolors="none", label=labels[1], alpha=0.8)
+            ax.scatter(train_[i][0], train_[i][1], train_[i][2], color=color[1], edgecolors="none", label=labels[1], alpha=0.8)
         elif trn_targets[i] == 2:
-            ax.scatter(train_[i][0], train_[i][1], color=color[2], edgecolors="none", label=labels[2], alpha=0.8)
+            ax.scatter(train_[i][0], train_[i][1], train_[i][2], color=color[2], edgecolors="none", label=labels[2], alpha=0.8)
         elif trn_targets[i] == 3:
-            ax.scatter(train_[i][0], train_[i][1], color=color[3], edgecolors="none", label=labels[3], alpha=0.8)
+            ax.scatter(train_[i][0], train_[i][1], train_[i][2], color=color[3], edgecolors="none", label=labels[3], alpha=0.8)
         elif trn_targets[i] == 4:
-            ax.scatter(train_[i][0], train_[i][1], color=color[4], edgecolors="none", label=labels[4], alpha=0.8)
+            ax.scatter(train_[i][0], train_[i][1], train_[i][2], color=color[4], edgecolors="none", label=labels[4], alpha=0.8)
         elif trn_targets[i] == 5:
-            ax.scatter(train_[i][0], train_[i][1], color=color[5], edgecolors="none", label=labels[5], alpha=0.8)
+            ax.scatter(train_[i][0], train_[i][1], train_[i][2], color=color[5], edgecolors="none", label=labels[5], alpha=0.8)
 
     # Plot the new data
-    print(new_data.shape)
-    print(train_.shape)
-    ax.scatter(new_data[0], new_data[1], color="purple", edgecolors="none", label="New Data", alpha=0.8, marker="x", s=100)
+    ax.scatter(new_data[0][0], new_data[0][1], color="purple", edgecolors="none", label="New Data", alpha=0.8, marker="x", s=100)
+
+    print(new_data[0][0], new_data[0][1])
 
     fig.suptitle(title)
     plt.xlabel("Linear Discriminant 1")
@@ -94,7 +94,6 @@ def plot_data(train_, trn_targets, title, labels, new_data):
     # Create a custom legend with the same colors as the corresponding class
     handles = [plt.Rectangle((0,0), 1, 1, color=color[i], alpha=0.8) for i in range(len(labels))]
     fig.legend(handles, labels.values())
-    fig.show()
 
     return fig
 

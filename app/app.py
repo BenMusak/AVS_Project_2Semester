@@ -15,6 +15,7 @@ MODEL_PATH_KNN = r"AVS_Project_2Semester\models\KNN_model.sav"
 MODEL_PATH_LDA = r"AVS_Project_2Semester\models\LDA_model.sav"
 WAVE_PATH = r"C:\Users\Benja\Documents\Skole\AI-Vision-Sound\8th_Semester\Project\code\AVS_Project_2Semester\record\output.wav"
 DATASET_PATH = r"LDA_Fishers_train.npz"
+SCALAR_PATH = r"scaler.pkl"
 model_KNN, model_LDA = utils.load_model(MODEL_PATH_KNN, MODEL_PATH_LDA) #load KNN model
 og_features, og_targets = lda.load_dataset(DATASET_PATH)
 
@@ -58,17 +59,16 @@ with clf:
         audio_data, sr = utils.load_file(WAVE_PATH)
 
         # make kNN prediction
-        features = utils.convert(audio_data, sr)
+        features, unscaled_features = utils.convert(audio_data, sr, SCALAR_PATH)
         y_pred = model_KNN.predict(features)
-        print(y_pred)
-        print(y_pred[0])
         y_label = label_guitar_model[y_pred[0]]
         st.metric(label="Class", value=y_label)
 
         # Display the LDA model
-        features_LDA = model_LDA.transform(features)
+        features_LDA = model_LDA.transform(unscaled_features)
+        print("LDA feature shape: ", features_LDA.shape)
         st.subheader('LDA model')
-        st.pyplot(lda.plot_data(og_features, og_targets, "LDA model", label_guitar_model, features_LDA))
+        st.pyplot(lda.plot_data(og_features, og_targets, "LDA model", label_guitar_model, features_LDA), clear_figure=True)
         
         #CLASSIFY = False
         clf_button = False

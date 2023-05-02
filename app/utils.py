@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import joblib
 from LDA import LDA
+from sklearn.preprocessing import StandardScaler
 
 
 def load_file(wav_path):
@@ -15,7 +16,9 @@ def load_file(wav_path):
         return None, None
 
 
-def convert(y, sr):
+def convert(y, sr, scaler_path):
+
+    mfccs = []
 
     trimmed = librosa.util.fix_length(data=y, size=int(sr * 2))
 
@@ -27,11 +30,21 @@ def convert(y, sr):
 
     all_mfcc = np.concatenate([mfcc, delta_mfcc, delta2_mfcc])
     features = np.sum(all_mfcc, axis=1)
-    
-    #features = features.reshape(1, -1)
-    #print(features.shape)
 
-    return features
+    mfccs.append(features)
+    mfccs = np.asarray(mfccs)
+
+    print(mfccs.shape)
+    
+    # Scale the data to be between -1 and 1
+    scaler = joblib.load(scaler_path)
+
+    # Transform the training and testing data
+    x_test_scaled = scaler.transform(mfccs)
+
+    print("New shape: ", x_test_scaled.shape)
+
+    return x_test_scaled, mfccs
 
 
 def visualize_MFCCs_Mel(MFCCs, Mel, sr):
