@@ -7,6 +7,12 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
             
 
+def reshape_data(X):
+    #print("Reshaping the dataset...")
+    #X = np.asarray(X)
+    X_reshaped = X.reshape(X.shape[0] * X.shape[1])
+    return X_reshaped
+
 
 # Function to load all the sound files from the directories
 def load_files_from_directories(directories):
@@ -59,6 +65,44 @@ def extract_mel_mfcc_multible_files(sound_files, label, display=False):
             
 
         mfccs.append(comprehensive_mfccs)
+        mels.append(mel)
+
+    # Print the shape of the MFCCs and Mel Spectrograms
+    print("MFCCs shape for label {}: {}".format(label, np.asarray(mfccs).shape))
+    return mels, mfccs
+
+
+def extract_mel_mfcc_multible_files_no_sum(sound_files, label, display=False):
+    mfccs = []
+    mels = []
+
+    # Loop over the sound files and load them using librosa.load
+    print("Extracting MFCCs and Mel Spectrograms...")
+    print("Number of files: " + str(len(sound_files)))
+    print("label: " + str(label))
+    for sound_file in sound_files:
+
+        # Load the sound file using librosa.load
+        mfcc = extract_MFCCs(sound_file[0], sound_file[1], res=13)
+        delta_mfcc = extract_delta_MFCCs(mfcc, order=1)
+        delta2_mfcc = extract_delta_MFCCs(mfcc, order=2)
+        comprehensive_mfccs = np.concatenate([mfcc, delta_mfcc, delta2_mfcc])
+
+        #comprehensive_mfccs = np.sum(comprehensive_mfccs, axis=1)
+        mel = extract_Mel(sound_file[0], sound_file[1])
+        
+        # Visualize the MFCCs and Mel Spectrograms if display is True, else sum the MFCCs
+        if display:
+            visualize_MFCCs_Mel(np.asanyarray(mfcc), np.asanyarray(mel), sound_file[1])
+
+        #print(comprehensive_mfccs.shape)    
+        
+        mfccs_reshaped = reshape_data(comprehensive_mfccs)
+
+        if mfccs_reshaped.shape[0] != 7332:
+            continue
+
+        mfccs.append(mfccs_reshaped)
         mels.append(mel)
 
     # Print the shape of the MFCCs and Mel Spectrograms

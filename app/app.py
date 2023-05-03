@@ -12,11 +12,12 @@ clf = st.container() # results of classifications
 
 CLASSIFY = False # doing classification
 MODEL_PATH_KNN = r"AVS_Project_2Semester\models\KNN_model.sav"
+MODEL_PATH_SVM = r"AVS_Project_2Semester\models\SVM_model.sav"
 MODEL_PATH_LDA = r"AVS_Project_2Semester\models\LDA_model.sav"
 WAVE_PATH = r"C:\Users\Benja\Documents\Skole\AI-Vision-Sound\8th_Semester\Project\code\AVS_Project_2Semester\record\output.wav"
 DATASET_PATH = r"LDA_Fishers_train.npz"
 SCALAR_PATH = r"scaler.pkl"
-model_KNN, model_LDA = utils.load_model(MODEL_PATH_KNN, MODEL_PATH_LDA) #load KNN model
+model_KNN, model_LDA, model_SVM = utils.load_model(MODEL_PATH_KNN, MODEL_PATH_LDA, MODEL_PATH_SVM) #load KNN model
 og_features, og_targets = lda.load_dataset(DATASET_PATH)
 
 # label for dataset
@@ -40,27 +41,32 @@ with record:
     rec_button = st.button('Record', key='audio-rec', on_click=r.record_audio())
     st.write(rec_button) # TODO : comment out in the end
 
-    rs.remove_silence_from_single_file(WAVE_PATH)
-
-    audio_data, sr = utils.load_file(WAVE_PATH)
-
-    # show audio wave if record button was pressed
     if rec_button:
-        st.line_chart(audio_data)
+        rs.remove_silence_from_single_file(WAVE_PATH)
 
-
-with clf: 
-    st.header('Classification') # TODO : remove later maybe
-
-    clf_button = st.button('Classify', key='knn-clf') # TODO : remove later
-    
-    if clf_button:
-        st.write("Converting Data...")
         audio_data, sr = utils.load_file(WAVE_PATH)
 
+        # show audio wave if there is any data
+        if audio_data is not None:
+            st.line_chart(audio_data)
+
+        # For prediction
+        st.write("Converting Data...")
+
+        # Convert audio data to features
+        st.subheader('Mels and MFCCs')
+        features, unscaled_features, fig_MFCCs = utils.convert(audio_data, sr, SCALAR_PATH)
+        st.pyplot(fig_MFCCs, clear_figure=True)
+
         # make kNN prediction
-        features, unscaled_features = utils.convert(audio_data, sr, SCALAR_PATH)
+        st.subheader('KNN prediction')
         y_pred = model_KNN.predict(features)
+        y_label = label_guitar_model[y_pred[0]]
+        st.metric(label="Class", value=y_label)
+
+        # Make SVM prediction
+        st.subheader('SVM prediction')
+        y_pred = model_SVM.predict(features)
         y_label = label_guitar_model[y_pred[0]]
         st.metric(label="Class", value=y_label)
 
@@ -69,6 +75,3 @@ with clf:
         print("LDA feature shape: ", features_LDA.shape)
         st.subheader('LDA model')
         st.pyplot(lda.plot_data(og_features, og_targets, "LDA model", label_guitar_model, features_LDA), clear_figure=True)
-        
-        #CLASSIFY = False
-        clf_button = False

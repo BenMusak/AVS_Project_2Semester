@@ -8,7 +8,7 @@ CHUNK = 1024
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 44100
-RECORD_SECONDS = 4
+RECORD_SECONDS = 5
 WAVE_FILENAME = r"AVS_Project_2Semester\record\output.wav" # path to .wav file
 DEVICE_NAME = 'Analogue 1 + 2 (Focusrite USB A'
 

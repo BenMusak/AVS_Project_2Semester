@@ -9,7 +9,7 @@ import os
 
 
 
-def extract_features(audio_file, sr, label, res_val, diff_extremes_val, display=False):
+def extract_features(audio_file, sr, label, res_val, diff_extremes_val, display=True):
     y = audio_file
     al.get_samples(y)
     MFCCs = al.extract_MFCCs(y, sr, res=13)
@@ -35,14 +35,13 @@ def main():
         directories = ["C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Les_Paul_(LP)".format(user), 
                        "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Solid_Guitar_(SG)".format(user),
                        "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Stratocaster_(SC)".format(user), 
-                       "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Telecaster_(TC)".format(user), 
-                       "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Telecaster_humbucker_(TC)".format(user)]
+                       "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Telecaster_(TC)".format(user)]
                     #    r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - Project\2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Bridge', 
                     #    r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - Project\2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Neck'
         
         
         # Labels for the classes
-        label_names = ["LP", "SG", "SC", "TC", "TC_Hum"]
+        label_names = ["LP", "SG", "SC", "TC"]
 
         # Load Audio Files from the given directories
         strum_list = al.load_files_from_directories(directories)
@@ -55,7 +54,7 @@ def main():
             print("lenght of strum_list: ", len(strum_list[label]))
 
             # Extract Mek and MFCC features from the current audio file
-            mels, mffcs = al.extract_mel_mfcc_multible_files(strum_list[label], label, display=False)
+            mels, mffcs = al.extract_mel_mfcc_multible_files_no_sum(strum_list[label], label, display=False)
 
             # Split the data into train and test data
             train_x_, train_y_, test_x_, test_y_ = al.dataset_combine_multible_files(mffcs, mels, strum_list[label], label)
@@ -77,15 +76,15 @@ def main():
 
         # Perform LDA on the train data
         model_LDA = lda.LDA_Fishers(train_x, train_y, test_x, 3, label_names=label_names)
-
         model_KNN = knn.knn_model(train_x, test_x, train_y, test_y)
-
         model_SVM = svm.svm_model(train_x, test_x, train_y, test_y)
 
         # Save the model 
-        file_path_KNN, file_path_LDA, file_path_SVM = utils.save_model(model_KNN, model_LDA, model_SVM)
+        file_path_KNN = utils.save_model(model_KNN, "KNN_model")
+        file_path_KNN = utils.save_model(model_LDA, "LDA_model")
+        file_path_SVM = utils.save_model(model_SVM, "SVM_model")
         # Load the model
-        loaded_model = utils.load_model(file_path_KNN)
+        loaded_model = utils.load_model(file_path_SVM)
         print("loaded model: ", loaded_model)
 
 

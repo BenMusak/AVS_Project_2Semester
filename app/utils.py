@@ -7,29 +7,36 @@ from sklearn.preprocessing import StandardScaler
 
 
 def load_file(wav_path):
-    try:   
-        signal, sr = librosa.load(wav_path)
-        normalized = np.array(librosa.util.normalize(signal))
+    try: 
+        audio_file, sr = librosa.load(wav_path, sr=48000, duration=2)
+        normalized = np.array(librosa.util.normalize(audio_file))
         return normalized, sr
     except:
         print("File not found.")
         return None, None
 
 
+def reshape_data(X):
+    #print("Reshaping the dataset...")
+    #X = np.asarray(X)
+    X_reshaped = X.reshape(X.shape[0] * X.shape[1])
+    return X_reshaped
+
+
 def convert(y, sr, scaler_path):
 
     mfccs = []
 
-    trimmed = librosa.util.fix_length(data=y, size=int(sr * 2))
+    #trimmed = librosa.util.fix_length(data=y, size=int(sr * 5))
 
-    mfcc = librosa.feature.mfcc(y=trimmed, sr=sr, n_mfcc=13)
+    mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
     delta_mfcc = librosa.feature.delta(mfcc, order=1)
     delta2_mfcc = librosa.feature.delta(mfcc, order=2)
 
-    visualize_MFCCs_Mel(mfcc, librosa.feature.melspectrogram(y=trimmed, sr=sr, n_mels=128, fmax=8000), sr)
+    fig = visualize_MFCCs_Mel(mfcc, librosa.feature.melspectrogram(y=y, sr=sr, n_mels=128, fmax=8000), sr)
 
     all_mfcc = np.concatenate([mfcc, delta_mfcc, delta2_mfcc])
-    features = np.sum(all_mfcc, axis=1)
+    features = reshape_data(all_mfcc)
 
     mfccs.append(features)
     mfccs = np.asarray(mfccs)
@@ -44,7 +51,7 @@ def convert(y, sr, scaler_path):
 
     print("New shape: ", x_test_scaled.shape)
 
-    return x_test_scaled, mfccs
+    return x_test_scaled, mfccs, fig
 
 
 def visualize_MFCCs_Mel(MFCCs, Mel, sr):
@@ -60,13 +67,15 @@ def visualize_MFCCs_Mel(MFCCs, Mel, sr):
     fig.colorbar(img_MFCCs, ax=[ax[1]])
     ax[1].set(title='MFCC')
     plt.title('MFCCs')
-    plt.show()
+    
+    return fig
 
 
-def load_model(model_path_KNN, model_path_LDA):
+def load_model(model_path_KNN, model_path_LDA, model_path_SVM):
     model_KNN = joblib.load(model_path_KNN)
     model_LDA = joblib.load(model_path_LDA)
-    return model_KNN, model_LDA
+    mode_SVM = joblib.load(model_path_SVM)
+    return model_KNN, model_LDA, mode_SVM
 
 #y, sr = load_file(WAVE_PATH)
 #features = convert(y, sr)
