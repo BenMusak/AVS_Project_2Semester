@@ -34,9 +34,21 @@ class GuitarDataset(Dataset):
         
         for index, row in self.df.iterrows():
             if row['name']==self.images_dir_list[idx][:-3] + 'wav': #The filename has .jpg, and csv has .wav
-                label = utils.label_str_to_int(row['guitar_type'])
+                manufacturer = utils.manufacturer_str_to_int(row['manufacturer'])
+                guitar_type = utils.guitar_type_str_to_int(row['guitar_type'])
+                pickup =utils.pickup_str_to_int(row['pickup'])
+                pickup_position = utils.pickup_position_str_to_int(row['pickup_position'])
+                strumming= utils.strumming_str_to_int(row['strumming'])
+                player = utils.player_str_to_int(row['player'])
 
-        return spectrogram, label
+        return spectrogram, {
+                                'manufacturer': manufacturer,
+                                'guitar_type': guitar_type,
+                                'pickup': pickup,
+                                'pickup_position': pickup_position,
+                                'strumming' : strumming,
+                                'player': player    
+                            }
 
 
 class GuitarDataModule(pl.LightningDataModule):
@@ -84,7 +96,7 @@ class GuitarDataModule(pl.LightningDataModule):
 class CNNClassifier(pl.LightningModule):
     def __init__(self):
         super(CNNClassifier, self).__init__()
-        num_classes = 5
+
         #In channels, Out channels
         self.conv1 = nn.Conv2d(1, 16, kernel_size=3, stride=1, padding=1)
         self.conv2 = nn.Conv2d(16, 32, kernel_size=3, stride=1, padding=1)
@@ -93,15 +105,32 @@ class CNNClassifier(pl.LightningModule):
         
         self.maxpool = nn.MaxPool2d(kernel_size=2)
         
-        self.fc1 = nn.Linear(128 * 8 * 11, 256) #how to make dynamic :(
-        self.fc2 = nn.Linear(256, num_classes)
+        self.fc1 = nn.Linear(128 * 8 * 11, 256)
+
+        self.manufacturer = nn.Linear(256, 7)
+        self.guitar_type = nn.Linear(256, 4)
+        self.pickup = nn.Linear(256, 2)
+        self.pickup_position = nn.Linear(256, 3)
+        self.strumming = nn.Linear(256, 2)
+        self.player = nn.Linear(256, 5)
         
         self.relu = nn.ReLU()
         
         self.criterion = nn.CrossEntropyLoss()
-        self.confusion_matrix = torchmetrics.ConfusionMatrix(num_classes=num_classes, task='multiclass')
         
-        self.test_confusion_matrix = np.zeros((num_classes, num_classes))       
+        self.confmat_manufacturer = torchmetrics.ConfusionMatrix(num_classes = 7, task='multiclass') 
+        self.confmat_guitar_type = torchmetrics.ConfusionMatrix(num_classes = 4, task='multiclass')
+        self.confmat_pickup = torchmetrics.ConfusionMatrix(num_classes = 2, task='multiclass')
+        self.confmat_pickup_position = torchmetrics.ConfusionMatrix(num_classes = 3, task='multiclass')
+        self.confmat_strumming = torchmetrics.ConfusionMatrix(num_classes = 2, task='multiclass')
+        self.confmat_player = torchmetrics.ConfusionMatrix(num_classes = 5, task='multiclass')
+        
+        self.confusion_matrix_manufacturer = np.zeros((7, 7))
+        self.confusion_matrix_guitar_type = np.zeros((4,4))
+        self.confusion_matrix_pickup = np.zeros((2,2))
+        self.confusion_matrix_pickup_position = np.zeros((3,3))
+        self.confusion_matrix_strumming = np.zeros((2,2))
+        self.confusion_matrix_player = np.zeros((5,5))
         
     def forward(self, x):
         x = self.relu(self.conv1(x))
@@ -115,34 +144,67 @@ class CNNClassifier(pl.LightningModule):
 
         x = x.view(-1, 128 * 8 * 11)        
         x = self.relu(self.fc1(x))
-        x = self.fc2(x)
-        
-        return x
+
+        return { 
+            'manufacturer': self.manufacturer(x),
+            'guitar_type': self.guitar_type(x),
+            'pickup':self.pickup(x),
+            'pickup_position': self.pickup_position(x),
+            'strumming': self.strumming(x),
+            'player': self.player(x)
+        }
+
+    def multilabel_loss_fn(self, y_hats, ys):
+        losses=0
+        for i, key in enumerate(y_hats):
+            losses += self.criterion(y_hats[key], ys[key])
+        return losses
+
+    def multilabel_predictions(self, y_hats, ys):
+        predictions=[]
+        for i, key in enumerate(y_hats):
+            _, predicted=torch.max(y_hats[key], 1)
+            predictions.append(predicted)
+        return predictions
+
+    def multilabel_accuracy(self, predictions, ys):
+        accuracies=[]
+        ys = list(ys.values()) #Dictionary to list
+        for idx, predicted in enumerate(predictions):
+            accuracy = (predicted == ys[idx]).sum().item() / len(predicted)
+            accuracies.append(accuracy)
+        return accuracies
 
     def training_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self(x)
         
-        loss = self.criterion(y_hat, y)
+        loss = self.multilabel_loss_fn(y_hat, y)
         self.log('train_loss', loss, prog_bar=True, on_epoch=True, on_step = False)
         
-        _, predicted = torch.max(y_hat, 1)
-        accuracy = (predicted == y).sum().item() / len(y)
-        self.log('train_acc', accuracy, prog_bar=True, on_epoch=True, on_step = False)
+        predictions = self.multilabel_predictions(y_hat, y)
+        accuracies = self.multilabel_accuracy(predictions, y)
 
-        
+        #self.log('train_acc', accuracy, prog_bar=True, on_epoch=True, on_step = False)
+   
         return loss
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self(x)
         
-        loss = self.criterion(y_hat, y)
+        loss = self.multilabel_loss_fn(y_hat, y)
         self.log('val_loss', loss, prog_bar=True, on_epoch=True, on_step = False)
         
-        _, predicted = torch.max(y_hat, 1)
-        accuracy = (predicted == y).sum().item() / len(y)
-        self.log('val_acc', accuracy, prog_bar=True, on_epoch=True, on_step = False)
+        predictions = self.multilabel_predictions(y_hat, y)
+        accuracies = self.multilabel_accuracy(predictions, y)
+
+        self.log('val_acc_manufacturer', accuracies[0], prog_bar=True, on_epoch=True, on_step = False)
+        self.log('val_acc_guitar_type', accuracies[1], prog_bar=True, on_epoch=True, on_step = False)
+        self.log('val_acc_pick', accuracies[2], prog_bar=True, on_epoch=True, on_step = False)
+        self.log('val_acc_pickup_position', accuracies[3], prog_bar=True, on_epoch=True, on_step = False)
+        self.log('val_acc_strumming', accuracies[4], prog_bar=True, on_epoch=True, on_step = False)
+        self.log('val_acc_player', accuracies[5], prog_bar=True, on_epoch=True, on_step = False)
 
         return loss
     
@@ -150,25 +212,40 @@ class CNNClassifier(pl.LightningModule):
         x, y = batch
         y_hat = self(x)
         
-        loss = self.criterion(y_hat, y)
+        loss = self.multilabel_loss_fn(y_hat, y)
         self.log('test_loss', loss, prog_bar=True, on_epoch=True, on_step = False)
         
-        _, predicted = torch.max(y_hat, 1)
-        accuracy = (predicted == y).sum().item() / len(y)
-        self.log('test_acc', accuracy, prog_bar=True, on_epoch=True, on_step = False)
-        
-        confusion_matrix = self.confusion_matrix(predicted, y)
-        self.test_confusion_matrix += confusion_matrix.cpu().numpy()
+        predictions = self.multilabel_predictions(y_hat, y)
+        accuracies = self.multilabel_accuracy(predictions, y)
+
+        self.log('test_acc_manufacturer', accuracies[0], prog_bar=True, on_epoch=True, on_step = False)
+        self.log('test_acc_guitar_type', accuracies[1], prog_bar=True, on_epoch=True, on_step = False)
+        self.log('test_acc_pick', accuracies[2], prog_bar=True, on_epoch=True, on_step = False)
+        self.log('test_acc_pickup_position', accuracies[3], prog_bar=True, on_epoch=True, on_step = False)
+        self.log('test_acc_strumming', accuracies[4], prog_bar=True, on_epoch=True, on_step = False)
+        self.log('test_acc_player', accuracies[5], prog_bar=True, on_epoch=True, on_step = False)
+    
+        confusion_matrix_manufacturer = self.confmat_manufacturer(predictions[0], y['manufacturer'])       
+        confusion_matrix_guitar_type = self.confmat_guitar_type(predictions[1], y['guitar_type'])
+        confusion_matrix_pickup = self.confmat_pickup(predictions[2], y['pickup'])
+        confusion_matrix_pickup_position = self.confmat_pickup_position(predictions[3], y['pickup_position'])
+        confusion_matrix_strumming = self.confmat_strumming(predictions[4], y['strumming'])     
+        confusion_matrix_player = self.confmat_player(predictions[5], y['player'])         
+
+        self.confusion_matrix_manufacturer += confusion_matrix_manufacturer.cpu().numpy()
+        self.confusion_matrix_guitar_type += confusion_matrix_guitar_type.cpu().numpy()
+        self.confusion_matrix_pickup += confusion_matrix_pickup.cpu().numpy()
+        self.confusion_matrix_pickup_position += confusion_matrix_pickup_position.cpu().numpy()
+        self.confusion_matrix_strumming += confusion_matrix_strumming.cpu().numpy()
+        self.confusion_matrix_player += confusion_matrix_player.cpu().numpy()
         
     def on_test_epoch_end(self):
-        plot_confusion_matrix(self.test_confusion_matrix, ['SC', 'TC', 'SG', 'LP'], filename='confusion_matrix.png')
-        
-    def predict_step(self, batch, batch_idx, dataloader_idx=None):
-        x = batch
-        y_hat = self(x)
-        
-        _, predicted = torch.max(y_hat, 1)
-        return predicted
+        plot_confusion_matrix(self.confusion_matrix_manufacturer, utils.get_manufacturer_labels(), filename='confusion_matrix_manufacturer.png')
+        plot_confusion_matrix(self.confusion_matrix_guitar_type, utils.get_guitar_type_labels(), filename='confusion_matrix_guitar_type.png')
+        plot_confusion_matrix(self.confusion_matrix_pickup, utils.get_pickup_labels(), filename='confusion_matrix_pickup.png')
+        plot_confusion_matrix(self.confusion_matrix_pickup_position, utils.get_pickup_position_labels(), filename='confusion_matrix_pickup_position.png')
+        plot_confusion_matrix(self.confusion_matrix_strumming, utils.get_strumming_labels(), filename='confusion_matrix_strumming.png')
+        plot_confusion_matrix(self.confusion_matrix_player, utils.get_player_labels(), filename='confusion_matrix_player.png')
 
     def configure_optimizers(self):
         optimizer = optim.Adam(self.parameters(), lr=0.001)
