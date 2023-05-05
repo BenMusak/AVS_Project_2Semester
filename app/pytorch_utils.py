@@ -102,4 +102,11 @@ def strumming_str_to_int(label):
 def player_str_to_int(label):
     return get_player_labels().index(label)
 
+###### Convert
+# TODO : why do we need this? 
+def convert_mel_spec_t(mel_spec):
+    mel_spec_t = torch.tensor(mel_spec)
+    mel_spec_t = torch.unsqueeze(mel_spec_t, dim=0)
+    return mel_spec_t
+
 

@@ -1,28 +1,20 @@
 import streamlit as st
-import dataset as ds
 import record as r
 import LDA as lda
 import utils
-import torch
 import remove_silence as rs
 import pytorch_utils
 import numpy as np
-import librosa
 from PIL import Image
 
-import sys
-np.set_printoptions(threshold=sys.maxsize)
-
 # page configuration
-st.set_page_config(page_title="SuperCoolGuitar2000", page_icon="👨‍🎤", layout="centered", initial_sidebar_state="auto", menu_items=None)
+page_icon = Image.open('app\mel_spec.jpg')
+st.set_page_config(page_title="SuperCoolGuitar2000", page_icon=page_icon, layout="centered", initial_sidebar_state="auto", menu_items=None)
 
 # containers
 header = st.container() # title
 record = st.container() # record audio and show audio wave
-clf = st.container() # results of classifications
 
-
-CLASSIFY = False # doing classification
 MODEL_PATH_KNN = r"models\KNN_model.sav"
 MODEL_PATH_SVM = r"models\SVM_model.sav"
 MODEL_PATH_LDA = r"models\LDA_model.sav"
@@ -64,17 +56,10 @@ with record:
             
             # import .wav audio file
             audio_data, sr = utils.load_file(WAVE_PATH)
-            print(f'Max of audio data : {np.max(audio_data)}')
 
             st.snow()
 
             # I do not know what is this shitty code wtf you say to me about my code
-            # TODO : CLEAN THIS ALSO UP
-            mel_spec = librosa.feature.melspectrogram(y=audio_data, sr=sr, n_mels=128)
-
-            mel_spec = Image.fromarray(mel_spec)
-            mel_spec = mel_spec.convert('L')
-            mel_spec.save('Spectigrammy.png')
 
             # show audio wave if there is any data
             if audio_data is not None:
@@ -105,10 +90,7 @@ with record:
             col_manu, col_guitar_type, col_pickup = st.columns(3)
             col_pickup_position, col_strumming, col_player = st.columns(3)
             
-            # TODO : clean this up
-            mel_spectrogram_t = torch.tensor(mel_spectrogram)
-            mel_spectrogram_t = torch.unsqueeze(mel_spectrogram_t, dim=0)
-            
+            mel_spectrogram_t = pytorch_utils.convert_mel_spec_t(mel_spectrogram)
             y_pred_cnn = model_CNN(mel_spectrogram_t)
             predictions = pytorch_utils.multilabel_predictions(y_pred_cnn)
             
