@@ -14,7 +14,7 @@ import sys
 np.set_printoptions(threshold=sys.maxsize)
 
 # page configuration
-st.set_page_config(page_title="Guitar Classification", page_icon="👨‍🎤", layout="centered", initial_sidebar_state="auto", menu_items=None)
+st.set_page_config(page_title="SuperCoolGuitar2000", page_icon="👨‍🎤", layout="centered", initial_sidebar_state="auto", menu_items=None)
 
 # containers
 header = st.container() # title

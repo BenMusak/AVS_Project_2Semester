@@ -19,16 +19,12 @@ def load_file(wav_path):
         return None, None
 
 def reshape_data(X):
-    #print("Reshaping the dataset...")
-    #X = np.asarray(X)
     X_reshaped = X.reshape(X.shape[0] * X.shape[1])
     return X_reshaped
 
 def convert_mfcc(y, sr, scaler_path):
 
     mfccs = []
-
-    #trimmed = librosa.util.fix_length(data=y, size=int(sr * 5))
 
     mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
     delta_mfcc = librosa.feature.delta(mfcc, order=1)
@@ -58,11 +54,12 @@ def convert_mel_spectrogram(y, sr):
     mel_spec = Image.fromarray(mel_spec)
     mel_spec = mel_spec.convert('L')
     mel_spec.save('mel_spectogram.png')
-    #lmao do not ask about the reason we do this
+    # lmao do not ask about the reason we do this 
+    # WHY ? ???????
     spectrogram = read_image('mel_spectogram.png', ImageReadMode.GRAY)
 
     spectrogram = spectrogram.float()
-    spectrogram = spectrogram / 255 #Normalize values from [0-255] to [0-1]
+    spectrogram = spectrogram / 255 # Normalize values from [0-255] to [0-1]
 
     return spectrogram
 
