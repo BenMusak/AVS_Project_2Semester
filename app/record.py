@@ -9,7 +9,7 @@ FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 44100
 RECORD_SECONDS = 5
-WAVE_FILENAME = r"AVS_Project_2Semester\record\output.wav" # path to .wav file
+#WAVE_FILENAME = r"record\output.wav" # path to .wav file
 DEVICE_NAME = 'Analogue 1 + 2 (Focusrite USB A'
 
 # to find input of SOUNDCARD
@@ -29,8 +29,8 @@ def find_input_device(pyAud):
     return foundDevice, dev_index
 
 # creating .wav file
-def create_wav(pyAud, frames):
-    wf = wave.open(WAVE_FILENAME, 'wb')
+def create_wav(pyAud, frames, output_path):
+    wf = wave.open(output_path, 'wb')
     wf.setnchannels(CHANNELS)
     wf.setsampwidth(pyAud.get_sample_size(FORMAT))
     wf.setframerate(RATE)
@@ -39,12 +39,13 @@ def create_wav(pyAud, frames):
     
     pass
 
-def record_audio():
+def record_audio(output_path):
     pyAud = pyaudio.PyAudio()
     
     foundDevice = True
     foundDevice, dev_index = find_input_device(pyAud)
-    
+    print()
+
     if not foundDevice:
         print('Cannot record audio')
         return None
@@ -70,10 +71,13 @@ def record_audio():
     stream.close()
     pyAud.terminate()
     
-    create_wav(pyAud, frames)
+    create_wav(pyAud, frames, output_path)
 
     #signal, sr = librosa.load(WAVE_FILENAME)
     #aud_data = read(WAVE_FILENAME)
     #aud_data = np.array(aud_data[1],dtype=float)
 
     #return aud_data
+
+#pyAud = pyaudio.PyAudio()
+#a , b = find_input_device(pyAud)

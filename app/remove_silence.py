@@ -12,6 +12,7 @@ def remove_silence_from_single_file(audio_path):
     audio_parts = split_on_silence(sound_file, min_silence_len=150, silence_thresh=-42)
 
     output_folder = audio_path
+    print(f'Length of audio_parts : {len(audio_parts)}')
     for i, audio_part in enumerate(audio_parts):
         audio_part.export(output_folder, format='wav')
 
