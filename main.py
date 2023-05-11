@@ -6,6 +6,9 @@ import SVM as svm
 #import remove_silence as rs
 import utils
 import os
+import vini_utils
+from sklearn.model_selection import train_test_split
+#from pytorch_utils import GuitarDataModule, GuitarDataset
 
 
 
@@ -23,62 +26,39 @@ def extract_features(audio_file, sr, label, res_val, diff_extremes_val, display=
     return train_x, train_y, test_x, test_y
 
 
+################HYPERPARAMETERS#####################
+HOME = os.path.expanduser('~')
+DATA_DIR = os.path.join(HOME, "Guitar_Samples_WAV_Sliced_Adjusted_Clipping") #Directory containing WAV files
+CSV_DIR = os.path.join(HOME, 'AVS8_CNN/metadata.csv')
+SR = 44100
+LABEL = 'guitar_type'
+####################################################
+
+
 def main():
     Multifile = True
 
     if Multifile:
-        # Remove silence from an audio files
-        #rs.remove_silence(r"C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\AudioStrumming_LP_Neck_Tone_4.wav")
+        data, labels, names = vini_utils.load_data_from_csv(DATA_DIR, CSV_DIR)
 
-        # Set the paths to the directories containing the sound files
-        user = os.getlogin()
-        directories = ["C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Adjusted_for_clipping\\Les_Paul_(LP)".format(user), 
-                       "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Adjusted_for_clipping\\Solid_Guitar_(SG)".format(user),
-                       "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Adjusted_for_clipping\\Stratocaster_(SC)".format(user), 
-                       "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Adjusted_for_clipping\\Telecaster_(TC)".format(user)]
-                    #    r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - Project\2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Bridge', 
-                    #    r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - Project\2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Neck'
+        #Labels is a list of dictionaries. The dictionary shows the classes to the WAV file with the same index.
+        #We cannot pass a list of dictionaries to the model, so we convert the dictionary to the desired label
+        labels = vini_utils.list_get_desired_label(labels, LABEL)
+
+        #MFCCs
+        mfccs = vini_utils.extract_mfccs(data, sr=SR)
+
+        #Split to train and test
+        train_x, test_x = train_test_split(mfccs, test_size=0.2, random_state = 69)
+        train_y, test_y = train_test_split(labels, test_size=0.2, random_state = 69)
+        train_names, test_names = train_test_split(names, test_size=0.2, random_state = 69)
         
-        
-        # Labels for the classes
-        label_names = ["LP", "SG", "SC", "TC"]
-
-        # Load Audio Files from the given directories
-        strum_list = al.load_files_from_directories(directories)
-
-        # Extract features
-        train_x, train_y, test_x, test_y = [], [], [], []
-
-        # Loop through the list of lists containing the audio files
-        for label in range(len(strum_list)):
-            print("lenght of strum_list: ", len(strum_list[label]))
-
-            # Extract Mel and MFCC features from the current audio file
-            mels, mffcs = al.extract_mel_mfcc_multible_files_no_sum(strum_list[label], label, display=False)
-
-            # Split the data into train and test data
-            train_x_, train_y_, test_x_, test_y_ = al.dataset_combine_multible_files(mffcs, mels, strum_list[label], label)
-
-            # Append the data to the lists so that they can be concatenated later
-            train_x.append(train_x_)
-            train_y.append(train_y_)
-            test_x.append(test_x_)
-            test_y.append(test_y_)
-        
-        # Concatenate all the data
-        train_x = np.concatenate(train_x)
-        train_y = np.concatenate(train_y)
-        test_x = np.concatenate(test_x)
-        test_y = np.concatenate(test_y)
-
-        print(train_x.shape, train_y.shape, test_x.shape, test_y.shape)
-
         # Save Dataset
         al.save_dataset(train_x, train_y, test_x, test_y)
 
         # Perform LDA on the train data and reduce the dimensionality of the train and test data
-        model_LDA, train_, train_tgt, test_, test_tgt = lda.LDA_Fishers(train_x, train_y, test_x, test_y, 3, label_names=label_names)
-        model_KNN_LDA = knn.knn_model(train_, test_, train_tgt, test_tgt, "KNN with LDA")
+        #model_LDA, train_, train_tgt, test_, test_tgt = lda.LDA_Fishers(train_x, train_y[LABEL], test_x, test_y[LABEL], 3, label_names=label_names)
+        #model_KNN_LDA = knn.knn_model(train_, test_, train_tgt, test_tgt, "KNN with LDA")
         model_KNN = knn.knn_model(train_x, test_x, train_y, test_y, "KNN without LDA")
         model_SVM = svm.svm_model(train_x, test_x, train_y, test_y)
 
