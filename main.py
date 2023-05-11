@@ -1,5 +1,5 @@
 import torch
-
+import wandb
 import os
 import numpy as np
 import pytorch_lightning as pl
@@ -9,25 +9,58 @@ from pytorch_utils import GuitarDataModule, CNNClassifier, GuitarDataset
 
 ################HYPERPARAMETERS#####################
 HOME = os.path.expanduser('~')
-#DATA_DIR = os.path.join(HOME, "Guitar_Data_Mel_Spectograms") #Directory containing images of the mel spectograms
-DATA_DIR = os.path.join(HOME, "Guitar_Data_MFCCs") #Directory containing images of the MFFCs
+DATA_DIR = os.path.join(HOME, "Guitar_Data_Mel_Spectrograms_Adjusted_Clipping") #Directory containing images of the mel spectograms
+#DATA_DIR = os.path.join(HOME, "Guitar_Data_MFCCs") #Directory containing images of the MFFCs
 CSV_DIR = "./metadata.csv" #CSV File with labels
-BATCH_SIZE = 128
 ####################################################
+sweep_configuration = {
+    'method': 'grid',
+    'name': 'sweep',
+    'metric': {
+        'goal': 'minimize', 
+        'name': 'test_loss'
+        },
+    'parameters': {
+        'batch_size': {'values': [32, 64, 128]},
+        'lr': {'values': [0.01 ,0.001 ,0.0001,0.00001]},
+        'optimizer': {'values':['Adam','SGD','Adadelta','Adagrad','AdamW','Adamax','NAdam','RAdam','RMSprop','Rprop']}
+     }
+}
+
+#ASGD
+#Run r2nyw2xa errored: UnboundLocalError("local variable 'optimizer' referenced before assignment")
+#wandb: ERROR Run r2nyw2xa errored: UnboundLocalError("local variable 'optimizer' referenced before assignment")
+
+#SparseAdam
+#Run b7f6cmmw errored: RuntimeError('SparseAdam does not support dense gradients, please consider Adam instead')
+#wandb: ERROR Run b7f6cmmw errored: RuntimeError('SparseAdam does not support dense gradients, please consider Adam instead')
+
+#goal is to minimize test loss
+#removed 16 batch size
+#fixed wandb init
+
+sweep_id = wandb.sweep(sweep=sweep_configuration, project="HOLA-PEPSICOLA")
+####################################################33
 
 def main():
-    print("Training a CNN Classifier on images in: ", DATA_DIR)
+    run = wandb.init()
+    lr  =  wandb.config.lr
+    bs = wandb.config.batch_size
+    optimizer= wandb.config.optimizer
+    run.name = f"Lr: {str(lr)} | BatchSize: {str(bs)} | Optimizer: {optimizer}"
 
     torch.set_float32_matmul_precision('medium') #To utilize Tensor Cores in the NVIDIA A40. Less precise multiplications, but faster processing time
-
-    train_loader = GuitarDataModule(DATA_DIR, CSV_DIR, BATCH_SIZE)
+    
+    train_loader = GuitarDataModule(DATA_DIR, CSV_DIR, batch_size=bs)
     trainer = pl.Trainer(max_epochs=100, accelerator='gpu', devices=1, log_every_n_steps=5)
-
-    model = CNNClassifier()
+    model = CNNClassifier(optimizer,lr)
 
     trainer.fit(model, train_loader)
     trainer.test(model, train_loader)
 
+    torch.cuda.empty_cache() #Release GPU memory, or else CUDA will run out of memory when sweeping
+
     print("End of main")
+wandb.agent(sweep_id=sweep_id, function=main)
 if __name__ == "__main__":
     main()

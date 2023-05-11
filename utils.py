@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import torch.optim as optim
 
 def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues, filename=None):
     if normalize:
@@ -42,7 +43,7 @@ def get_strumming_labels():
     return ['Open','Amajor']
 
 def get_player_labels():
-    return ['JM', 'VS', 'BH', 'JG', 'KB']
+    return ['JM', 'VS', 'BH', 'JG', 'KB','AL']
 
 
 #######Labels -> Int####
@@ -63,3 +64,4 @@ def strumming_str_to_int(label):
 
 def player_str_to_int(label):
     return get_player_labels().index(label)
+
