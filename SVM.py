@@ -18,7 +18,7 @@ def svm_model(x_train, x_test, y_train, y_test):
     x_train_scaled = scaler.transform(x_train)
     x_test_scaled = scaler.transform(x_test)
 
-    # Create a KNN model
+    # Create a SVM model
     grid_params = [{'kernel': ['rbf'], 'gamma': [1e-4, 1e-3, 1e-2, 1e-1, 1e0, 1e1, 1e2],
                     'C': [1, 10, 100, 1000]},
                     {'kernel': ['linear'], 'C': [1, 10, 100, 1000]}]

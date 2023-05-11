@@ -32,10 +32,10 @@ def main():
 
         # Set the paths to the directories containing the sound files
         user = os.getlogin()
-        directories = ["C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Les_Paul_(LP)".format(user), 
-                       "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Solid_Guitar_(SG)".format(user),
-                       "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Stratocaster_(SC)".format(user), 
-                       "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Telecaster_(TC)".format(user)]
+        directories = ["C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Adjusted_for_clipping\\Les_Paul_(LP)".format(user), 
+                       "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Adjusted_for_clipping\\Solid_Guitar_(SG)".format(user),
+                       "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Adjusted_for_clipping\\Stratocaster_(SC)".format(user), 
+                       "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Adjusted_for_clipping\\Telecaster_(TC)".format(user)]
                     #    r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - Project\2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Bridge', 
                     #    r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - Project\2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Neck'
         
@@ -53,7 +53,7 @@ def main():
         for label in range(len(strum_list)):
             print("lenght of strum_list: ", len(strum_list[label]))
 
-            # Extract Mek and MFCC features from the current audio file
+            # Extract Mel and MFCC features from the current audio file
             mels, mffcs = al.extract_mel_mfcc_multible_files_no_sum(strum_list[label], label, display=False)
 
             # Split the data into train and test data
@@ -71,23 +71,26 @@ def main():
         test_x = np.concatenate(test_x)
         test_y = np.concatenate(test_y)
 
+        print(train_x.shape, train_y.shape, test_x.shape, test_y.shape)
+
         # Save Dataset
         al.save_dataset(train_x, train_y, test_x, test_y)
 
-        # Perform LDA on the train data
-        model_LDA = lda.LDA_Fishers(train_x, train_y, test_x, 3, label_names=label_names)
-        model_KNN = knn.knn_model(train_x, test_x, train_y, test_y)
+        # Perform LDA on the train data and reduce the dimensionality of the train and test data
+        model_LDA, train_, train_tgt, test_, test_tgt = lda.LDA_Fishers(train_x, train_y, test_x, test_y, 3, label_names=label_names)
+        model_KNN_LDA = knn.knn_model(train_, test_, train_tgt, test_tgt, "KNN with LDA")
+        model_KNN = knn.knn_model(train_x, test_x, train_y, test_y, "KNN without LDA")
         model_SVM = svm.svm_model(train_x, test_x, train_y, test_y)
 
         # Save the model 
+        #file_path_KNN = utils.save_model(model_KNN_LDA, "KNN_LDA_model")
         file_path_KNN = utils.save_model(model_KNN, "KNN_model")
-        file_path_KNN = utils.save_model(model_LDA, "LDA_model")
+        file_path_LDA = utils.save_model(model_LDA, "LDA_model")
         file_path_SVM = utils.save_model(model_SVM, "SVM_model")
+
         # Load the model
-        loaded_model = utils.load_model(file_path_SVM)
-        print("loaded model: ", loaded_model)
-
-
+        #loaded_model = utils.load_model(file_path_SVM)
+        #print("loaded model: ", loaded_model)
     else:
         # Load Audio Files
         SG_audio, SG_sr = al.load_audio_file("Test_dataset/AudioStrumming_SG.wav")

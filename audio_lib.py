@@ -31,7 +31,7 @@ def load_files_from_directories(directories):
         # Load the sound file using librosa.load
         print("Loading files from directory: " + str(idx + 1) + " of " + str(len(directories)))
         for i in range(len(strum_file)):
-            audio_file = librosa.load(strum_file[i], sr=48000, duration=2)
+            audio_file = librosa.load(strum_file[i], sr=44100, duration=2)
             normalized = np.array(librosa.util.normalize(audio_file[0]))
             strum_list[idx].append((normalized, audio_file[1]))
             #strum_list[idx].append(librosa.load(strum_file[i], sr=48000, duration=2))
@@ -284,3 +284,16 @@ def dataset_split(MFCCs, Mel, sr, label, res=100, diff_extremes=43, display=Fals
 def save_dataset(train_x, train_y, test_x, test_y):
     print("Saving dataset...")
     np.savez("dataset.npz", train_x=train_x, train_y=train_y, test_x=test_x, test_y=test_y)
+
+
+def load_dataset(dataset_path):
+    # Load the numpy dataset
+    dataset = np.load(dataset_path)
+    # Split the dataset into features and targets
+    print(dataset.files)
+    train_x = np.absolute(dataset['train_x'])
+    train_y = np.absolute(dataset['train_y'])
+    test_x = np.absolute(dataset['test_x'])
+    test_y = np.absolute(dataset['test_y'])
+
+    return train_x, train_y, test_x, test_y

@@ -2,8 +2,6 @@ import librosa
 import matplotlib.pyplot as plt
 import numpy as np
 import joblib
-from LDA import LDA
-from sklearn.preprocessing import StandardScaler
 from pytorch_utils import CNNClassifier
 import torch
 from PIL import Image
@@ -11,7 +9,7 @@ from torchvision.io import read_image, ImageReadMode
 
 def load_file(wav_path):
     try: 
-        audio_file, sr = librosa.load(wav_path, sr=48000, duration=2)
+        audio_file, sr = librosa.load(wav_path, sr=44100, duration=2)
         normalized = np.array(librosa.util.normalize(audio_file))
         return normalized, sr
     except:
@@ -54,8 +52,6 @@ def convert_mel_spectrogram(y, sr):
     mel_spec = Image.fromarray(mel_spec)
     mel_spec = mel_spec.convert('L')
     mel_spec.save('mel_spectogram.png')
-    # lmao do not ask about the reason we do this 
-    # WHY ? ???????
     spectrogram = read_image('mel_spectogram.png', ImageReadMode.GRAY)
 
     spectrogram = spectrogram.float()
