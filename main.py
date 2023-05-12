@@ -56,6 +56,8 @@ def main():
             # Extract Mel and MFCC features from the current audio file
             mels, mffcs = al.extract_mel_mfcc_multible_files_no_sum(strum_list[label], label, display=False)
 
+            print(len(mffcs))
+
             # Split the data into train and test data
             train_x_, train_y_, test_x_, test_y_ = al.dataset_combine_multible_files(mffcs, mels, strum_list[label], label)
 
@@ -80,7 +82,8 @@ def main():
         model_LDA, train_, train_tgt, test_, test_tgt = lda.LDA_Fishers(train_x, train_y, test_x, test_y, 3, label_names=label_names)
         model_KNN_LDA = knn.knn_model(train_, test_, train_tgt, test_tgt, "KNN with LDA")
         model_KNN = knn.knn_model(train_x, test_x, train_y, test_y, "KNN without LDA")
-        model_SVM = svm.svm_model(train_x, test_x, train_y, test_y)
+        model_SVM_LDA = svm.svm_model(train_x, test_x, train_y, test_y, "SVM with LDA")
+        model_SVM = svm.svm_model(train_x, test_x, train_y, test_y, "SVM without LDA")
 
         # Save the model 
         #file_path_KNN = utils.save_model(model_KNN_LDA, "KNN_LDA_model")

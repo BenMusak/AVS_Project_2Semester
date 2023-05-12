@@ -99,7 +99,7 @@ def extract_mel_mfcc_multible_files_no_sum(sound_files, label, display=False):
         
         mfccs_reshaped = reshape_data(comprehensive_mfccs)
 
-        if mfccs_reshaped.shape[0] != 7332:
+        if mfccs_reshaped.shape[0] != 6747:
             continue
 
         mfccs.append(mfccs_reshaped)
