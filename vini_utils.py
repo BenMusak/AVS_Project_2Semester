@@ -51,10 +51,10 @@ def extract_mfccs(soundfiles, sr=44100):
         delta2_mfcc = extract_delta_MFCCs(mfcc, order=2)
         comprehensive_mfccs = np.concatenate([mfcc, delta_mfcc, delta2_mfcc])
 
-        comprehensive_mfccs = np.sum(comprehensive_mfccs, axis=1)
-        #mfccs_reshaped = reshape_data(comprehensive_mfccs)
+        #comprehensive_mfccs = np.sum(comprehensive_mfccs, axis=1)
+        mfccs_reshaped = reshape_data(comprehensive_mfccs)
 
-        mfccs.append(comprehensive_mfccs)
+        mfccs.append(mfccs_reshaped)
 
     return mfccs    
 

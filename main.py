@@ -29,9 +29,9 @@ def extract_features(audio_file, sr, label, res_val, diff_extremes_val, display=
 ################HYPERPARAMETERS#####################
 HOME = os.path.expanduser('~')
 DATA_DIR = os.path.join(HOME, "Guitar_Samples_WAV_Sliced_Adjusted_Clipping") #Directory containing WAV files
-CSV_DIR = os.path.join(HOME, 'AVS8_CNN/metadata.csv')
+CSV_DIR = os.path.join(HOME, 'AVS_Project_2Semester/metadata.csv')
 SR = 44100
-LABEL = 'guitar_type'
+LABEL = 'player'
 ####################################################
 
 
@@ -57,7 +57,7 @@ def main():
         al.save_dataset(train_x, train_y, test_x, test_y)
 
         # Perform LDA on the train data and reduce the dimensionality of the train and test data
-        #model_LDA, train_, train_tgt, test_, test_tgt = lda.LDA_Fishers(train_x, train_y[LABEL], test_x, test_y[LABEL], 3, label_names=label_names)
+        model_LDA, train_x, train_y, test_x, test_y = lda.LDA_Fishers(train_x, train_y, test_x, test_y, 1, label_names=vini_utils.get_player_labels())
         #model_KNN_LDA = knn.knn_model(train_, test_, train_tgt, test_tgt, "KNN with LDA")
         model_KNN = knn.knn_model(train_x, test_x, train_y, test_y, "KNN without LDA")
         model_SVM = svm.svm_model(train_x, test_x, train_y, test_y)
