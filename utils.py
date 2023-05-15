@@ -1,6 +1,7 @@
 import joblib
 import os
 
+
 def save_model(model, model_name):
     file_name = "{model_name}.sav".format(model_name=model_name)
     current_dir = os.path.dirname(os.path.abspath(__file__))

@@ -26,3 +26,11 @@ models/SVM_model.sav
 models/SVM_model_99_accuracy.sav
 models/Good_models.rar
 models/KNN_model.sav
+*.csv
+*.png
+dataset.npz
+*.npz
+*.sav
+*.sav
+*.pkl
+*.avi

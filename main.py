@@ -1,11 +1,12 @@
+import utils
+import os
+import vini_utils
 import audio_lib as al
 import KNN as knn
 import numpy as np
 import LDA as lda
 import SVM as svm
-#import remove_silence as rs
-import utils
-import os
+from sklearn.model_selection import train_test_split
 
 
 
@@ -23,77 +24,76 @@ def extract_features(audio_file, sr, label, res_val, diff_extremes_val, display=
     return train_x, train_y, test_x, test_y
 
 
+user = os.getlogin()
+DATA_DIR = "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\3. All_Sliced_Samples_with_CSV (No Clipping and Short samples removed)\\data".format(user) #Directory containing WAV files
+CSV_DIR = "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\3. All_Sliced_Samples_with_CSV (No Clipping and Short samples removed)\\metadata.csv".format(user)
+SR = 44100
+GLO_LABELS = ['pickup_position', 'strumming', 'player']
+
+
 def main():
     Multifile = True
 
     if Multifile:
-        # Remove silence from an audio files
-        #rs.remove_silence(r"C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - 2. Data\1. Sound_samples\5. Full_recordings\AudioStrumming_LP_Neck_Tone_4.wav")
 
-        # Set the paths to the directories containing the sound files
-        user = os.getlogin()
-        directories = ["C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Adjusted_for_clipping\\Les_Paul_(LP)".format(user), 
-                       "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Adjusted_for_clipping\\Solid_Guitar_(SG)".format(user),
-                       "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Adjusted_for_clipping\\Stratocaster_(SC)".format(user), 
-                       "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\1. Sound_samples\\5. Full_recordings\\All_data\\WAV\\Adjusted_for_clipping\\Telecaster_(TC)".format(user)]
-                    #    r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - Project\2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Bridge', 
-                    #    r'C:\Users\jespe\Aalborg Universitet\AVS - Semester 8 - Group 841 - Project\2. Data\1. Sound_samples\6. Guitar_same_classes\LP_Neck'
-        
-        
-        # Labels for the classes
-        label_names = ["LP", "SG", "SC", "TC"]
+        data, labels, names = vini_utils.load_data_from_csv(DATA_DIR, CSV_DIR)
 
-        # Load Audio Files from the given directories
-        strum_list = al.load_files_from_directories(directories)
+        for LABEL in GLO_LABELS:
+            
+            print("LABEL: ", LABEL)
 
-        # Extract features
-        train_x, train_y, test_x, test_y = [], [], [], []
+            # Labels is a list of dictionaries. The dictionary shows the classes to the WAV file with the same index.
+            # We cannot pass a list of dictionaries to the model, so we convert the dictionary to the desired label
+            labels_des = vini_utils.list_get_desired_label(labels, LABEL)
 
-        # Loop through the list of lists containing the audio files
-        for label in range(len(strum_list)):
-            print("lenght of strum_list: ", len(strum_list[label]))
+            #MFCCs
+            mfccs = vini_utils.extract_mfccs(data, sr=SR)
 
-            # Extract Mel and MFCC features from the current audio file
-            mels, mffcs = al.extract_mel_mfcc_multible_files_no_sum(strum_list[label], label, display=False)
+            #Split to train and test
+            train_x, test_x = train_test_split(mfccs, test_size=0.2, random_state = 69)
+            train_y, test_y = train_test_split(labels_des, test_size=0.2, random_state = 69)
+            #train_names, test_names = train_test_split(names, test_size=0.2, random_state = 69)
 
-            print(len(mffcs))
+            # Save Dataset
+            al.save_dataset(train_x, train_y, test_x, test_y)
 
-            # Split the data into train and test data
-            train_x_, train_y_, test_x_, test_y_ = al.dataset_combine_multible_files(mffcs, mels, strum_list[label], label)
+            # Get the label names
+            if LABEL == 'manufacturer':
+                label_names = vini_utils.get_manufacturer_labels()
+            elif LABEL == 'guitar_type':
+                label_names = vini_utils.get_guitar_type_labels()
+            elif LABEL == 'pickup':
+                label_names = vini_utils.get_pickup_labels()
+            elif LABEL == 'pickup_position':
+                label_names = vini_utils.get_pickup_position_labels()
+            elif LABEL == 'strumming':
+                label_names = vini_utils.get_strumming_labels()
+            elif LABEL == 'player':
+                label_names = vini_utils.get_player_labels()
 
-            # Append the data to the lists so that they can be concatenated later
-            train_x.append(train_x_)
-            train_y.append(train_y_)
-            test_x.append(test_x_)
-            test_y.append(test_y_)
-        
-        # Concatenate all the data
-        train_x = np.concatenate(train_x)
-        train_y = np.concatenate(train_y)
-        test_x = np.concatenate(test_x)
-        test_y = np.concatenate(test_y)
+            # Make sure the dimensions for the LDA reduction is the same as the number of classes - 1
+            if len(label_names) <= 3:
+                dim = len(label_names) - 1
+            else:
+                dim = 3
 
-        print(train_x.shape, train_y.shape, test_x.shape, test_y.shape)
+            print("LDA dimensionality for {}: {}".format(LABEL, dim))
 
-        # Save Dataset
-        al.save_dataset(train_x, train_y, test_x, test_y)
+            # Perform LDA on the train data and reduce the dimensionality of the train and test data
+            model_LDA, train_, train_tgt, test_, test_tgt = lda.LDA_Fishers(train_x, train_y, test_x, test_y, dim, LABEL, label_names=label_names)
+            file_path_LDA = utils.save_model(model_LDA, "LDA_model_{}".format(LABEL))
 
-        # Perform LDA on the train data and reduce the dimensionality of the train and test data
-        model_LDA, train_, train_tgt, test_, test_tgt = lda.LDA_Fishers(train_x, train_y, test_x, test_y, 3, label_names=label_names)
-        model_KNN_LDA = knn.knn_model(train_, test_, train_tgt, test_tgt, "KNN with LDA")
-        model_KNN = knn.knn_model(train_x, test_x, train_y, test_y, "KNN without LDA")
-        model_SVM_LDA = svm.svm_model(train_x, test_x, train_y, test_y, "SVM with LDA")
-        model_SVM = svm.svm_model(train_x, test_x, train_y, test_y, "SVM without LDA")
+            model_KNN_LDA = knn.knn_model(train_, test_, train_tgt, test_tgt, label_names, "{}_KNN_with_LDA".format(LABEL))
+            file_path_KNN = utils.save_model(model_KNN_LDA, "{}KNN_with_LDA".format(LABEL))
 
-        # Save the model 
-        #file_path_KNN = utils.save_model(model_KNN_LDA, "KNN_LDA_model")
-        file_path_KNN = utils.save_model(model_KNN, "KNN_model")
-        file_path_LDA = utils.save_model(model_LDA, "LDA_model")
-        file_path_SVM = utils.save_model(model_SVM, "SVM_model")
+            model_KNN = knn.knn_model(train_x, test_x, train_y, test_y, label_names, "{}_KNN_without_LDA".format(LABEL))
+            file_path_KNN = utils.save_model(model_KNN, "KNN_model_{}".format(LABEL))
 
-        # Load the model
-        #loaded_model = utils.load_model(file_path_SVM)
-        #print("loaded model: ", loaded_model)
+            model_SVM_LDA = svm.svm_model(train_x, test_x, train_y, test_y, label_names, "{}_SVM_with_LDA".format(LABEL))
+            file_path_SVM = utils.save_model(model_SVM_LDA, "{}SVM_with_LDA".format(LABEL))
+
+            model_SVM = svm.svm_model(train_x, test_x, train_y, test_y, label_names, "{}_SVM_without_LDA".format(LABEL))
+            file_path_SVM = utils.save_model(model_SVM, "SVM_model_{}".format(LABEL))
     else:
         # Load Audio Files
         SG_audio, SG_sr = al.load_audio_file("Test_dataset/AudioStrumming_SG.wav")

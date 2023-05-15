@@ -1,14 +1,21 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import plot_confusion_matrix
-from sklearn.metrics import precision_recall_curve
+from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 
-def svm_model(x_train, x_test, y_train, y_test, model_name):
+def svm_model(x_train, x_test, y_train, y_test, label_names, model_name):
+
+    x_train = np.array(x_train)
+    x_test = np.array(x_test)
+    y_train = np.array(y_train).ravel()
+    y_test = np.array(y_test).ravel()
+
     print(f'Shape: {x_train.shape}')
     print(f'Observation: \n{x_train[0]}')
     print(f'Labels: {y_train}')
@@ -34,6 +41,9 @@ def svm_model(x_train, x_test, y_train, y_test, model_name):
     results = pd.DataFrame(model.cv_results_)
     print(results)
 
+    # Save pandas dataframe as csv file
+    results.to_csv(f'dataframes/csv_models/model_scores/{model_name}_results.csv')
+
     # Show the different parameters tested and the best one
     print(f'Best Parameters: {model.best_params_}')
     print(f'Model Score for {model_name}: {model.score(x_test_scaled, y_test)}')
@@ -43,18 +53,19 @@ def svm_model(x_train, x_test, y_train, y_test, model_name):
     print(f'Confusion Matrix best scored model for {model_name} with Test Data: \n{confusion_matrix(y_predict, y_test)}')
     
     # plot the confusion matrix
-    plot_confusion_matrix(model, x_test_scaled, y_test, cmap=plt.cm.Blues)
+    plot_confusion_matrix(model, x_test_scaled, y_test, cmap=plt.cm.Blues, display_labels=label_names)
 
     # Save the confusion matrix as an image
-    plt.savefig(f'{model_name}_confusion_matrix.png')
+    plt.savefig(f'dataframes/plots/{model_name}_confusion_matrix.png')
 
     print(f'Accuracy Score best scored model for {model_name} with Test Data: {accuracy_score(y_predict, y_test)}')
 
-    # Plot the precision-recall curve
-    #precision, recall, thresholds = precision_recall_curve(y_test, y_predict)
-    #plt.plot(recall, precision, marker='.')
-    #plt.xlabel('Recall')
-    #plt.ylabel('Precision')
-    #plt.show()
+    # For each class, print the precision and recall
+    report = classification_report(y_predict, y_test, output_dict=True)
+    print(f'Classification Report for {model_name} best model: \n{report}')
+
+    # Save the classification_report to a CSV file
+    df = pd.DataFrame(report).transpose()
+    df.to_csv(f'dataframes/csv_models/classification_reports/{model_name}_report.csv')
 
     return model
