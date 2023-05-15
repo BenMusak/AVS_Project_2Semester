@@ -1,6 +1,11 @@
 import numpy as np
+from scipy.stats import multivariate_normal as norm
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDASK
+from scipy.stats import multivariate_normal
 
 
 class LDA:
@@ -92,22 +97,103 @@ def plot_data(train_, trn_targets, title, labels):
     plt.show()
 
 
-def LDA_Fishers(trainset, trn_targets, test, n_components, label_names=["default", "default", "default", "default", "default"]):
-    lda = LDA(n_components)
+def plot_data_3D(train_, trn_targets, title, labels):
+    
+    train_ = np.absolute(train_)
+
+    # Change backend for matplotlib to plot in python
+    #matplotlib.use('TkAgg')
+
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')
+
+    color = ["red", "green", "blue", "yellow", "black", "orange"]
+    for i in range(len(train_)):
+        if trn_targets[i] == 0:
+            #ax.scatter(train_[i][0], train_[i][1], train_[i][2], color=color[0], edgecolors="none", label=labels[0], alpha=0.8)
+            ax.scatter3D(train_[i][0], train_[i][1], train_[i][2], color=color[0], edgecolors="none", label=labels[0], alpha=0.5)
+        elif trn_targets[i] == 1:
+            ax.scatter3D(train_[i][0], train_[i][1], train_[i][2], color=color[1], edgecolors="none", label=labels[1], alpha=0.5)
+        elif trn_targets[i] == 2:
+            ax.scatter3D(train_[i][0], train_[i][1], train_[i][2], color=color[2], edgecolors="none", label=labels[2], alpha=0.5)
+        elif trn_targets[i] == 3:
+            ax.scatter3D(train_[i][0], train_[i][1], train_[i][2], color=color[3], edgecolors="none", label=labels[3], alpha=0.5)
+        elif trn_targets[i] == 4:
+            ax.scatter3D(train_[i][0], train_[i][1], train_[i][2], color=color[4], edgecolors="none", label=labels[4], alpha=0.5)
+        elif trn_targets[i] == 5:
+            ax.scatter3D(train_[i][0], train_[i][1], train_[i][2], color=color[5], edgecolors="none", label=labels[5], alpha=0.5)
+
+    fig.suptitle(title)
+    ax.set_xlabel("Linear Discriminant 1")
+    ax.set_xlabel("Linear Discriminant 2")
+    ax.set_xlabel("Linear Discriminant 3")
+
+    # Create a custom legend with the same colors as the corresponding class
+    handles = [plt.Rectangle((0,0), 1, 1, color=color[i], alpha=0.8) for i in range(len(labels))]
+    fig.legend(handles, labels)
+    plt.show()
+
+
+def regularize_covariance(covariance_matrix, shrinkage_factor=0.1):
+    p = covariance_matrix.shape[0]
+    shrunk_covariance_matrix = ((1 - shrinkage_factor) * covariance_matrix 
+                                + shrinkage_factor * np.trace(covariance_matrix) / p * np.eye(p))
+    return shrunk_covariance_matrix
+
+
+def LDA_Fishers(trainset, trn_targets, test_x, test_y, n_components, label_names=["default", "default", "default", "default", "default"]):
+
+    #trainset, trn_targets, test_x, test_y, label_names = load_dataset("LDA_Fishers_train.npz")
+
+    lda = LDASK(n_components=n_components, solver="eigen", shrinkage="auto")
+    #lda.fit(np.absolute(trainset), trn_targets)
+    print("Fitting LDA...")
     lda.fit(trainset, trn_targets)
 
-    train_ =[]
-    train_tgt = []
-    test_ = []
-    for i in range(len(trainset)):
-        train_.append(lda.transform(trainset[i]))
-        train_tgt.append(trn_targets[i])
-    for i in range(len(test)):
-        test_.append(lda.transform(test[i][0]))
+    #train_ =[]
+    #train_tgt = []
+    #test_ = []
+    #for i in range(len(trainset)):
+    #    train_.append(lda.transform(trainset[i]))
+    #    train_tgt.append(trn_targets[i])
+    #for i in range(len(test_x)):
+    #    test_.append(lda.transform(test_x[i]))
+    #    test_tgt = test_y[i]
+
+    train_ = lda.transform(trainset)
+    train_tgt = trn_targets
+    test_ = lda.transform(test_x)
+    test_tgt = test_y
+
+    print("Plotting...")
     if n_components == 2:
         plot_data(train_, train_tgt, "LDA Fisher's", label_names)
+    elif n_components == 3:
+        plot_data_3D(train_, train_tgt, "LDA Fisher's", label_names)
+        
+    # Predict the labels of test data
+    y_pred = lda.predict(test_x)
 
+    # Calculate the accuracy of the model
+    accuracy = np.sum(test_y == y_pred) / len(test_y) * 100
+    print("Accuracy of LDA: {:.2f}%".format(accuracy))
+
+    print("Saving dataset...")
     # save the data
-    np.savez("LDA_Fishers_train", train_=train_, train_tgt=train_tgt, label_names=label_names)
+    np.savez("LDA_Fishers_train", train_=train_, train_tgt=train_tgt, test_=test_, test_tgt=test_y, label_names=label_names)
     
-    return lda
+    return lda, train_, train_tgt, test_, test_tgt
+
+
+def load_dataset(dataset_path):
+    # Load the numpy dataset
+    dataset = np.load(dataset_path)
+    # Split the dataset into features and targets
+    print(dataset.files)
+    features = np.absolute(dataset['train_'])
+    targets = np.absolute(dataset['train_tgt'])
+    label_names = dataset['label_names']
+    test_x = np.absolute(dataset['test_'])
+    test_y = np.absolute(dataset['test_tgt'])
+
+    return features, targets, test_x, test_y, label_names

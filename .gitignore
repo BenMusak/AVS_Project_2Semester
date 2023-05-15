@@ -12,6 +12,17 @@ HiBujdosoandJesper.png
 mel_spectogram.png
 MelSpectrogram.png
 Spectigrammy.png
-
-report/
-record/output.wav
+models/LDA_model.sav
+models/LDA_model.sav
+models/LDA_model - Kopi.sav
+models/KNN_model.sav
+models/KNN_model_94_accuracy.sav
+models/Good_models.rar
+models/older_models/Good_models.rar
+models/older_models/KNN_model_94_accuracy.sav
+models/older_models/LDA_model - Kopi.sav
+models/older_models/SVM_model_99_accuracy.sav
+models/SVM_model.sav
+models/SVM_model_99_accuracy.sav
+models/Good_models.rar
+models/KNN_model.sav
