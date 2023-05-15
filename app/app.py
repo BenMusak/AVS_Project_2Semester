@@ -15,6 +15,7 @@ st.set_page_config(page_title="SuperCoolGuitar2000", page_icon=page_icon, layout
 header = st.container() # title
 record = st.container() # record audio and show audio wave
 
+# variables
 MODEL_PATH_KNN = r"models\KNN_model.sav"
 MODEL_PATH_SVM = r"models\SVM_model.sav"
 MODEL_PATH_LDA = r"models\LDA_model.sav"
@@ -35,6 +36,8 @@ label_guitar_model = {
     5 : 'Unkown'
     }
 
+#################################
+##          DE APP             ##
 #################################
 
 with header:
