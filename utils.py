@@ -9,7 +9,3 @@ def save_model(model, model_name):
     file_path = os.path.join(models_dir, file_name)
     joblib.dump(model, file_path)
     return file_path
-
-
-def load_model(file_path):
-    return joblib.load(file_path)

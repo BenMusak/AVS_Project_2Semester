@@ -75,9 +75,79 @@ def visualize_MFCCs_Mel(MFCCs, Mel, sr):
     
     return fig
 
-def load_model(model_path_KNN, model_path_LDA, model_path_SVM, model_path_CNN):
+def load_models(model_path_KNN, model_path_LDA, model_path_SVM, model_path_CNN):
     model_KNN = joblib.load(model_path_KNN)
     model_LDA = joblib.load(model_path_LDA)
     model_SVM = joblib.load(model_path_SVM)
     model_CNN = CNNClassifier().load_from_checkpoint(model_path_CNN, map_location=torch.device('cpu')).eval()
     return model_KNN, model_LDA, model_SVM, model_CNN
+
+
+def load_model(file_path, labels):
+    return joblib.load(file_path)
+
+
+def load_CNN_model(file_path):
+    return CNNClassifier().load_from_checkpoint(file_path, map_location=torch.device('cpu')).eval()
+
+
+def get_labels(label):
+    # label for dataset
+    if label == 'manufacturer':
+        label_manufacturer = {
+            0 : 'Gibson',
+            1 : 'Epiphone', 
+            2 : 'Supreme',
+            3 : 'Axtech',
+            4 : 'Fender',
+            5 : 'Hansen',
+            6 : 'Squier'
+            }
+        return label_manufacturer
+
+    # label for dataset
+    elif label == 'guitar_type':
+        label_guitar_type = {
+            0 : 'LP',
+            1 : 'SG', 
+            2 : 'SC',
+            3 : 'TC'
+            }
+        return label_guitar_type
+
+    # label for dataset
+    elif label == 'pickup':
+        label_pickup = {
+            0 : 'Humbucker',
+            1 : 'Single Coil'
+            }
+        return label_pickup
+
+    # label for dataset
+    elif label == 'pickup_position':
+        label_pickup_position = {
+            0 : 'Bridge',
+            1 : 'Middle',
+            2 : 'Neck'
+            }
+        return label_pickup_position
+
+    # label for dataset
+    elif label == 'strumming':
+        label_strumming = {
+            0 : 'Open',
+            1 : 'A-major'
+            }
+        return label_strumming
+
+    # label for dataset
+    elif label == 'player':
+        label_player = {
+            0 : 'JM',
+            1 : 'VS', 
+            2 : 'BH',
+            3 : 'JG',
+            4 : 'KB',
+            5 : 'AL',
+            }
+        return label_player

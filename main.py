@@ -28,7 +28,7 @@ user = os.getlogin()
 DATA_DIR = "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\3. All_Sliced_Samples_with_CSV (No Clipping and Short samples removed)\\data".format(user) #Directory containing WAV files
 CSV_DIR = "C:\\Users\\{0}\\Aalborg Universitet\\AVS - Semester 8 - Group 841 - Project\\2. Data\\3. All_Sliced_Samples_with_CSV (No Clipping and Short samples removed)\\metadata.csv".format(user)
 SR = 44100
-GLO_LABELS = ['pickup_position', 'strumming', 'player']
+GLO_LABELS = ['player']
 
 
 def main():

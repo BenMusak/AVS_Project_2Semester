@@ -18,25 +18,21 @@ st.set_page_config(page_title="SuperCoolGuitar2000", page_icon=page_icon, layout
 header = st.container() # title
 record = st.container() # record audio and show audio wave
 
-MODEL_PATH_KNN = r"models\KNN_model.sav"
-MODEL_PATH_SVM = r"models\SVM_model.sav"
-MODEL_PATH_LDA = r"models\LDA_model.sav"
+# Paths
+LABELS = ["guitar_type", "pickup", "pickup_position", "strumming", "player"]
+MODELS_PATH_KNN = ["models/KNN_model_{}.sav".format(label) for label in LABELS]
+models_KNN = [utils.load_model(MODEL_PATH_KNN, LABELS) for MODEL_PATH_KNN in MODELS_PATH_KNN]
+MODELS_PATH_SVM = ["models/SVM_model_{}.sav".format(label) for label in LABELS]
+models_SVM = [utils.load_model(MODEL_PATH_SVM, LABELS) for MODEL_PATH_SVM in MODELS_PATH_SVM]
+MODELS_PATH_LDA = ["models/LDA_model_{}.sav".format(label) for label in LABELS]
+models_LDA = [utils.load_model(MODEL_PATH_LDA, LABELS) for MODEL_PATH_LDA in MODELS_PATH_LDA]
 WAVE_PATH = r"record\output.wav"
-DATASET_PATH = r"LDA_Fishers_train.npz"
-SCALAR_PATH = r"scaler.pkl"
+DATASET_PATH = ["models/fishers_dataset/{}_LDA_Fishers_train.npz".format(label) for label in LABELS]
+SCALAR_PATH = ["scaler_{}_KNN_without_LDA.pkl".format(label) for label in LABELS]
 MODEL_PATH_CNN= r"models\CNN_model.ckpt"
-model_KNN, model_LDA, model_SVM, model_CNN = utils.load_model(MODEL_PATH_KNN, MODEL_PATH_LDA, MODEL_PATH_SVM, MODEL_PATH_CNN) #load KNN model
-og_features, og_targets = lda.load_dataset(DATASET_PATH)
+model_CNN = utils.load_CNN_model(MODEL_PATH_CNN) #load KNN model
+#og_features, og_targets =  lda.load_dataset(DATASET_PATH)
 
-# label for dataset
-label_guitar_model = {
-    0 : 'Les Paul',
-    1 : 'Solid Guitar', 
-    2 : 'Stratocaster',
-    3 : 'TeleCaster'
-    }
-
-#################################
 
 with header:
     st.title('Guitar Classification 🎸')
@@ -46,12 +42,14 @@ with record:
     
     if rec_button:
 
-        with st.spinner("Loading..."):
+        with st.spinner("Recording..."):
             st.balloons()
 
             # record audio
-            #r.record_audio(WAVE_PATH)
+            r.record_audio(WAVE_PATH)
 
+
+        with st.spinner("Removing Silience..."):
             # remove silence from record
             rs.remove_silence_from_single_file(WAVE_PATH)
             
@@ -66,37 +64,61 @@ with record:
             else : 
                 st.exception("No audio data file ☢️")
             
+        with st.spinner("Predicting labels..."):
             # Convert audio data to features
-            features, unscaled_features, fig_MFCCs = utils.convert_mfcc(audio_data, sr, SCALAR_PATH)
+            #features, unscaled_features, fig_MFCCs = utils.convert_mfcc(audio_data, sr, SCALAR_PATH)
             mel_spectrogram = utils.convert_mel_spectrogram(audio_data, sr)
 
             # display Mel and MFCCs
-            st.subheader("Mel-Spectogram and MFCCs")
-            st.pyplot(fig_MFCCs, clear_figure=True)
-            
-            # Display the LDA model
-            features_LDA = model_LDA.transform(features)
-            print("LDA feature shape: ", features_LDA.shape)
-            st.subheader('LDA model and prediction')
-            y_pred_LDA = model_LDA.predict(features)
-            y_label_LDA = label_guitar_model[y_pred_LDA[0]]
-            col_LDA, _ = st.columns(2)
-            col_LDA.metric(label="LDA", value=y_label_LDA)
-            st.pyplot(lda.plot_data(og_features, og_targets, "LDA model", label_guitar_model, features_LDA), clear_figure=True)
+            #st.subheader("Mel-Spectogram and MFCCs")
+            #st.pyplot(fig_MFCCs, clear_figure=True)
 
-            # kNN and SVM section
-            st.subheader("KNN and SVM")
-            col_knn, col_svm= st.columns(2)
+
+            # LDA, KNN, and SVM section
+            st.subheader("KNN, SVM, and LDA")
+            col_knn, col_svm, col_lda = st.columns(3)
+
+            # Display the LDA model
+            for i, model_LDA in enumerate(models_LDA):
+                scalar_name = "models/scalars/scaler_{}_KNN_without_LDA.pkl".format(LABELS[i])
+                __, unscaled_features, fig_MFCCs = utils.convert_mfcc(audio_data, sr, scalar_name)
+                #st.subheader("LDA model for {}".format(LABELS[i]))
+                features_LDA = model_LDA.transform(unscaled_features)
+                y_pred_LDA = model_LDA.predict(unscaled_features)
+                print(y_pred_LDA)
+                labels = utils.get_labels(LABELS[i])
+                y_label_LDA = labels[y_pred_LDA[0]]
+                col_lda.metric(label="LDA model for {}".format(LABELS[i]), value=y_label_LDA)
+                og_features, og_targets =  lda.load_dataset(DATASET_PATH[i])
+
+                try:
+                    st.pyplot(lda.plot_data(og_features,  og_targets, "LDA model for {}".format(LABELS[i]), labels, features_LDA), clear_figure=True)
+                except:
+                    continue
             
             # kNN prediction
-            y_pred_knn = model_KNN.predict(features)
-            y_label_knn = label_guitar_model[y_pred_knn[0]]
-            col_knn.metric(label="KNN", value=y_label_knn)
+            for i, model_KNN in enumerate(models_KNN):
+                scalar_name = "models/scalars/scaler_{}_KNN_without_LDA.pkl".format(LABELS[i])
+                print("scalar_name: ", scalar_name)
+                print("Label: ", LABELS[i])
+                print("KNN model: ", model_KNN)
+                features, unscaled_features, fig_MFCCs = utils.convert_mfcc(audio_data, sr, scalar_name)
+                y_pred_knn = model_KNN.predict(features)
+                labels = utils.get_labels(LABELS[i])
+                y_label_knn = labels[y_pred_knn[0]]
+                col_knn.metric(label="KNN model for {}".format(LABELS[i]), value=y_label_knn)
 
             # SVM prediction
-            y_pred_svm = model_SVM.predict(features)
-            y_label_svm = label_guitar_model[y_pred_svm[0]]
-            col_svm.metric(label="SVM", value=y_label_svm)
+            for i, model_SVM in enumerate(models_SVM):
+                scalar_name = "models/scalars/scaler_{}_KNN_without_LDA.pkl".format(LABELS[i])
+                print("scalar_name: ", scalar_name)
+                print("Label: ", LABELS[i])
+                print("SVM model: ", model_SVM)
+                features, unscaled_features, fig_MFCCs = utils.convert_mfcc(audio_data, sr, scalar_name)
+                y_pred_svm = model_SVM.predict(features)
+                labels = utils.get_labels(LABELS[i])
+                y_label_svm = labels[y_pred_svm[0]]
+                col_svm.metric("SVM model for {}".format(LABELS[i]), value=y_label_svm)
 
             # CNN classification
             st.subheader("CNN classifications")
