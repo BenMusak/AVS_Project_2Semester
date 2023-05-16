@@ -85,23 +85,21 @@ with record:
                 #st.subheader("LDA model for {}".format(LABELS[i]))
                 features_LDA = model_LDA.transform(unscaled_features)
                 y_pred_LDA = model_LDA.predict(unscaled_features)
-                print(y_pred_LDA)
                 labels = utils.get_labels(LABELS[i])
                 y_label_LDA = labels[y_pred_LDA[0]]
                 col_lda.metric(label="LDA model for {}".format(LABELS[i]), value=y_label_LDA)
                 og_features, og_targets =  lda.load_dataset(DATASET_PATH[i])
 
-                try:
-                    st.pyplot(lda.plot_data(og_features,  og_targets, "LDA model for {}".format(LABELS[i]), labels, features_LDA), clear_figure=True)
-                except:
-                    continue
+                st.pyplot(lda.plot_data(og_features,  og_targets, "LDA model for {}".format(LABELS[i]), labels, features_LDA), clear_figure=True)
+
+                #try:
+                    #st.pyplot(lda.plot_data(og_features,  og_targets, "LDA model for {}".format(LABELS[i]), labels, features_LDA), clear_figure=True)
+                #except ValueError as e:
+                #    st.exception(e)
             
             # kNN prediction
             for i, model_KNN in enumerate(models_KNN):
                 scalar_name = "models/scalars/scaler_{}_KNN_without_LDA.pkl".format(LABELS[i])
-                print("scalar_name: ", scalar_name)
-                print("Label: ", LABELS[i])
-                print("KNN model: ", model_KNN)
                 features, unscaled_features, fig_MFCCs = utils.convert_mfcc(audio_data, sr, scalar_name)
                 y_pred_knn = model_KNN.predict(features)
                 labels = utils.get_labels(LABELS[i])
@@ -111,9 +109,6 @@ with record:
             # SVM prediction
             for i, model_SVM in enumerate(models_SVM):
                 scalar_name = "models/scalars/scaler_{}_KNN_without_LDA.pkl".format(LABELS[i])
-                print("scalar_name: ", scalar_name)
-                print("Label: ", LABELS[i])
-                print("SVM model: ", model_SVM)
                 features, unscaled_features, fig_MFCCs = utils.convert_mfcc(audio_data, sr, scalar_name)
                 y_pred_svm = model_SVM.predict(features)
                 labels = utils.get_labels(LABELS[i])
