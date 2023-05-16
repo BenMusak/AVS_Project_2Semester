@@ -5,6 +5,7 @@ import numpy as np
 import pytorch_lightning as pl
 import torchvision.transforms as transforms
 from pytorch_utils import GuitarDataModule, CNNClassifier, GuitarDataset
+from pytorch_lightning.callbacks import ModelCheckpoint
 #from suck_my_balls import load_files_from_directories, extract_mel_mfcc_multible_files, dataset_combine_multible_files
 
 ################HYPERPARAMETERS#####################
@@ -22,22 +23,15 @@ sweep_configuration = {
         },
     'parameters': {
         'batch_size': {'values': [32, 64, 128]},
-        'lr': {'values': [0.01 ,0.001 ,0.0001,0.00001]},
-        'optimizer': {'values':['Adam','SGD','Adadelta','Adagrad','AdamW','Adamax','NAdam','RAdam','RMSprop','Rprop']}
+        'lr': {'values': [0.00001]},
+        'optimizer': {'values':['Adam','SGD','Adadelta','Adagrad','AdamW','NAdam','RAdam','RMSprop','Rprop']}
      }
+    # 'parameters': {
+    #     'batch_size': {'values': [64]},
+    #     'lr': {'values': [0.001]},
+    #     'optimizer': {'values':['RAdam']}
+    #  }
 }
-
-#ASGD
-#Run r2nyw2xa errored: UnboundLocalError("local variable 'optimizer' referenced before assignment")
-#wandb: ERROR Run r2nyw2xa errored: UnboundLocalError("local variable 'optimizer' referenced before assignment")
-
-#SparseAdam
-#Run b7f6cmmw errored: RuntimeError('SparseAdam does not support dense gradients, please consider Adam instead')
-#wandb: ERROR Run b7f6cmmw errored: RuntimeError('SparseAdam does not support dense gradients, please consider Adam instead')
-
-#goal is to minimize test loss
-#removed 16 batch size
-#fixed wandb init
 
 sweep_id = wandb.sweep(sweep=sweep_configuration, project="HOLA-PEPSICOLA")
 ####################################################33
@@ -51,8 +45,13 @@ def main():
 
     torch.set_float32_matmul_precision('medium') #To utilize Tensor Cores in the NVIDIA A40. Less precise multiplications, but faster processing time
     
+    checkpoint_callback = ModelCheckpoint(
+    monitor='val_loss',  # Metric to monitor
+    mode='min',          # 'min' if the metric should be minimized, 'max' if maximized
+    save_top_k=1         # Save only the best model
+    )
     train_loader = GuitarDataModule(DATA_DIR, CSV_DIR, batch_size=bs)
-    trainer = pl.Trainer(max_epochs=100, accelerator='gpu', devices=1, log_every_n_steps=5)
+    trainer = pl.Trainer(max_epochs=200, accelerator='gpu', devices=1, log_every_n_steps=5, callbacks=[checkpoint_callback])
     model = CNNClassifier(optimizer,lr)
 
     trainer.fit(model, train_loader)
@@ -60,6 +59,8 @@ def main():
 
     torch.cuda.empty_cache() #Release GPU memory, or else CUDA will run out of memory when sweeping
 
+    best_model_path = checkpoint_callback.best_model_path
+    print(best_model_path)
     print("End of main")
 wandb.agent(sweep_id=sweep_id, function=main)
 if __name__ == "__main__":

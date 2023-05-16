@@ -66,7 +66,7 @@ class GuitarDataset(Dataset):
 
 
 class GuitarDataModule(pl.LightningDataModule):
-    def __init__(self, images_dir, csv_dir, batch_size=16,transform = None):
+    def __init__(self, images_dir, csv_dir, batch_size=16,transform = None, only_test_set=False):
         super().__init__()
         self.batch_size = batch_size
         self.all_samples = []
@@ -74,6 +74,7 @@ class GuitarDataModule(pl.LightningDataModule):
         self.images_dir = images_dir
         self.csv_dir = csv_dir
         self.transform = transform
+        self.only_test_set=only_test_set
         
     def prepare_data(self):
         #We don't use this function for loading the data as prepare_data is called from a single GPU. 
@@ -85,16 +86,20 @@ class GuitarDataModule(pl.LightningDataModule):
         self.all_samples = GuitarDataset(self.images_dir, self.csv_dir,self.transform) 
         #The data is split into train, val and test with a 70/20/10 split
         print("Amount of samples: ", len(self.all_samples))
-        train_size = int(len(self.all_samples) * 0.7)
-        val_size= int(len(self.all_samples) * 0.2)
-        test_size= len(self.all_samples) - train_size - val_size
+        if self.only_test_set==False:
+            train_size = int(len(self.all_samples) * 0.7)
+            val_size= int(len(self.all_samples) * 0.2)
+            test_size= len(self.all_samples) - train_size - val_size
 
-        print("Train size: ", train_size)
-        print("Val size: ", val_size)
-        print("Test size: ", test_size)
+            print("Train size: ", train_size)
+            print("Val size: ", val_size)
+            print("Test size: ", test_size)
 
-        self.train_data, self.val_data, self.test_data = random_split(self.all_samples, [train_size, val_size ,test_size ], generator=torch.Generator().manual_seed(69))
-        
+            self.train_data, self.val_data, self.test_data = random_split(self.all_samples, [train_size, val_size ,test_size ], generator=torch.Generator().manual_seed(69))
+        else:
+            print("Test size: ", len(self.all_samples))
+            self.test_data = self.all_samples
+
     def train_dataloader(self):
         return DataLoader(self.train_data, batch_size=self.batch_size, num_workers=20, pin_memory=True, persistent_workers=True)
     
@@ -108,10 +113,10 @@ class GuitarDataModule(pl.LightningDataModule):
 
 
 class CNNClassifier(pl.LightningModule):
-    def __init__(self,optimizer_str,lr):
+    def __init__(self):#,optimizer_str,lr):
         super(CNNClassifier, self).__init__()
-        self.lr=lr
-        self.optimizer_str=optimizer_str
+        #self.lr=lr
+        #self.optimizer_str=optimizer_str
         #In channels, Out channels
         self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=0)  
         self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=0)
@@ -226,12 +231,13 @@ class CNNClassifier(pl.LightningModule):
         predictions = self.multilabel_predictions(y_hat, y)
         accuracies = self.multilabel_accuracy(predictions, y)
         epoch = self.trainer.current_epoch
-        #self.log('val_acc_manufacturer', accuracies[0], prog_bar=True, on_epoch=True, on_step = False)
-        #self.log('val_acc_guitar_type', accuracies[1], prog_bar=True, on_epoch=True, on_step = False)
-        # self.log('val_acc_pick', accuracies[2], prog_bar=True, on_epoch=True, on_step = False)
-        # self.log('val_acc_pickup_position', accuracies[3], prog_bar=True, on_epoch=True, on_step = False)
-        # self.log('val_acc_strumming', accuracies[4], prog_bar=True, on_epoch=True, on_step = False)
-        # self.log('val_acc_player', accuracies[5], prog_bar=True, on_epoch=True, on_step = False)
+        self.log('val_acc_manufacturer', accuracies[0], prog_bar=True, on_epoch=True, on_step = False)
+        self.log('val_acc_guitar_type', accuracies[1], prog_bar=True, on_epoch=True, on_step = False)
+        self.log('val_acc_pick', accuracies[2], prog_bar=True, on_epoch=True, on_step = False)
+        self.log('val_acc_pickup_position', accuracies[3], prog_bar=True, on_epoch=True, on_step = False)
+        self.log('val_acc_strumming', accuracies[4], prog_bar=True, on_epoch=True, on_step = False)
+        self.log('val_acc_player', accuracies[5], prog_bar=True, on_epoch=True, on_step = False)
+        self.log('val_loss', loss/6)
         wandb.log({'val_loss':loss/6, 
                    'epoch':epoch
                    })
@@ -249,13 +255,13 @@ class CNNClassifier(pl.LightningModule):
         predictions = self.multilabel_predictions(y_hat, y)
         accuracies = self.multilabel_accuracy(predictions, y)
         #epoch = self.trainer.current_epoch
-        # self.log('test_acc_manufacturer', accuracies[0], prog_bar=True, on_epoch=True, on_step = False)
-        # self.log('test_acc_guitar_type', accuracies[1], prog_bar=True, on_epoch=True, on_step = False)
-        # self.log('test_acc_pick', accuracies[2], prog_bar=True, on_epoch=True, on_step = False)
-        # self.log('test_acc_pickup_position', accuracies[3], prog_bar=True, on_epoch=True, on_step = False)
-        # self.log('test_acc_strumming', accuracies[4], prog_bar=True, on_epoch=True, on_step = False)
-        # self.log('test_acc_player', accuracies[5], prog_bar=True, on_epoch=True, on_step = False)
-
+        self.log('test_acc_manufacturer', accuracies[0], prog_bar=True, on_epoch=True, on_step = False)
+        self.log('test_acc_guitar_type', accuracies[1], prog_bar=True, on_epoch=True, on_step = False)
+        self.log('test_acc_pick', accuracies[2], prog_bar=True, on_epoch=True, on_step = False)
+        self.log('test_acc_pickup_position', accuracies[3], prog_bar=True, on_epoch=True, on_step = False)
+        self.log('test_acc_strumming', accuracies[4], prog_bar=True, on_epoch=True, on_step = False)
+        self.log('test_acc_player', accuracies[5], prog_bar=True, on_epoch=True, on_step = False)
+        
         
         self.test_loss.append((loss/6).detach().cpu())
         self.test_acc_manufacturer.append(accuracies[0])
@@ -282,14 +288,14 @@ class CNNClassifier(pl.LightningModule):
         
     def on_test_epoch_end(self):
         #Plot mean to wandb
-        wandb.log({'test_loss':np.mean(self.test_loss), 
-                   'test_acc_manufacturer': np.mean(self.test_acc_manufacturer),
-                   'test_acc_guitar_type': np.mean(self.test_acc_guitar),
-                   'test_acc_pickup': np.mean(self.test_acc_pickup),
-                   'test_acc_pickup_position': np.mean(self.test_acc_pickup_position),
-                   'test_acc_strumming': np.mean(self.test_acc_strumming),
-                   'test_acc_player': np.mean(self.test_acc_player),
-                   })
+        #wandb.log({'test_loss':np.mean(self.test_loss), 
+        #           'test_acc_manufacturer': np.mean(self.test_acc_manufacturer),
+        #           'test_acc_guitar_type': np.mean(self.test_acc_guitar),
+        #           'test_acc_pickup': np.mean(self.test_acc_pickup),
+        #           'test_acc_pickup_position': np.mean(self.test_acc_pickup_position),
+        #           'test_acc_strumming': np.mean(self.test_acc_strumming),
+        #           'test_acc_player': np.mean(self.test_acc_player),
+        #           })
 
         self.test_loss = []
         self.test_acc_manufacturer = []
@@ -299,12 +305,12 @@ class CNNClassifier(pl.LightningModule):
         self.test_acc_strumming = []
         self.test_acc_player = []
 
-        plot_confusion_matrix(self.confusion_matrix_manufacturer, utils.get_manufacturer_labels(), filename='confusion_matrix_manufacturer.png')
-        plot_confusion_matrix(self.confusion_matrix_guitar_type, utils.get_guitar_type_labels(), filename='confusion_matrix_guitar_type.png')
-        plot_confusion_matrix(self.confusion_matrix_pickup, utils.get_pickup_labels(), filename='confusion_matrix_pickup.png')
-        plot_confusion_matrix(self.confusion_matrix_pickup_position, utils.get_pickup_position_labels(), filename='confusion_matrix_pickup_position.png')
-        plot_confusion_matrix(self.confusion_matrix_strumming, utils.get_strumming_labels(), filename='confusion_matrix_strumming.png')
-        plot_confusion_matrix(self.confusion_matrix_player, utils.get_player_labels(), filename='confusion_matrix_player.png')
+        plot_confusion_matrix(self.confusion_matrix_manufacturer, utils.get_manufacturer_labels(), title= 'Manufacturer Confusion Matrix',filename='confusion_matrix_manufacturer.png')
+        plot_confusion_matrix(self.confusion_matrix_guitar_type, utils.get_guitar_type_labels(),title= 'Guitar Type Confusion Matrix', filename='confusion_matrix_guitar_type.png')
+        plot_confusion_matrix(self.confusion_matrix_pickup, utils.get_pickup_labels(), title= 'Pickup Type Confusion Matrix',filename='confusion_matrix_pickup.png')
+        plot_confusion_matrix(self.confusion_matrix_pickup_position, utils.get_pickup_position_labels(),title= 'Pikcup Position Confusion Matrix', filename='confusion_matrix_pickup_position.png')
+        plot_confusion_matrix(self.confusion_matrix_strumming, utils.get_strumming_labels(),title= 'Strumming Method Confusion Matrix', filename='confusion_matrix_strumming.png')
+        plot_confusion_matrix(self.confusion_matrix_player, utils.get_player_labels(),title= 'Player Confusion Matrix', filename='confusion_matrix_player.png')
 
     ####### Optimizer
     def optimizer_selection(self):
