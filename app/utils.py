@@ -7,9 +7,9 @@ import torch
 from PIL import Image
 from torchvision.io import read_image, ImageReadMode
 
-def load_file(wav_path):
+def load_file(wav_path, sr):
     try: 
-        audio_file, sr = librosa.load(wav_path, sr=44100, duration=2)
+        audio_file, sr = librosa.load(wav_path, sr=sr, duration=2)
         normalized = np.array(librosa.util.normalize(audio_file))
         return normalized, sr
     except:

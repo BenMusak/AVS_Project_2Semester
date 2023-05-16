@@ -31,6 +31,7 @@ DATASET_PATH = ["models/fishers_dataset/{}_LDA_Fishers_train.npz".format(label) 
 SCALAR_PATH = ["scaler_{}_KNN_without_LDA.pkl".format(label) for label in LABELS]
 MODEL_PATH_CNN= r"models\CNN_model.ckpt"
 model_CNN = utils.load_CNN_model(MODEL_PATH_CNN) #load KNN model
+plot_LDA = False
 #og_features, og_targets =  lda.load_dataset(DATASET_PATH)
 
 
@@ -54,7 +55,7 @@ with record:
             rs.remove_silence_from_single_file(WAVE_PATH)
             
             # import .wav audio file
-            audio_data, sr = utils.load_file(WAVE_PATH)
+            audio_data, sr = utils.load_file(WAVE_PATH, 44100)
 
             st.snow()
 
@@ -66,13 +67,8 @@ with record:
             
         with st.spinner("Predicting labels..."):
             # Convert audio data to features
-            #features, unscaled_features, fig_MFCCs = utils.convert_mfcc(audio_data, sr, SCALAR_PATH)
-            mel_spectrogram = utils.convert_mel_spectrogram(audio_data, sr)
-
-            # display Mel and MFCCs
-            #st.subheader("Mel-Spectogram and MFCCs")
-            #st.pyplot(fig_MFCCs, clear_figure=True)
-
+            audio_data_mel, _ = utils.load_file(WAVE_PATH, 48000)
+            mel_spectrogram = utils.convert_mel_spectrogram(audio_data_mel, 48000)
 
             # LDA, KNN, and SVM section
             st.subheader("KNN, SVM, and LDA")
@@ -90,12 +86,8 @@ with record:
                 col_lda.metric(label="LDA model for {}".format(LABELS[i]), value=y_label_LDA)
                 og_features, og_targets =  lda.load_dataset(DATASET_PATH[i])
 
-                st.pyplot(lda.plot_data(og_features,  og_targets, "LDA model for {}".format(LABELS[i]), labels, features_LDA), clear_figure=True)
-
-                #try:
-                    #st.pyplot(lda.plot_data(og_features,  og_targets, "LDA model for {}".format(LABELS[i]), labels, features_LDA), clear_figure=True)
-                #except ValueError as e:
-                #    st.exception(e)
+                if plot_LDA:
+                    st.pyplot(lda.plot_data(og_features,  og_targets, "LDA model for {}".format(LABELS[i]), labels, features_LDA), clear_figure=True)
             
             # kNN prediction
             for i, model_KNN in enumerate(models_KNN):
@@ -117,14 +109,13 @@ with record:
 
             # CNN classification
             st.subheader("CNN classifications")
-            col_manu, col_guitar_type, col_pickup = st.columns(3)
+            col_guitar_type, col_pickup = st.columns(2)
             col_pickup_position, col_strumming, col_player = st.columns(3)
             
             mel_spectrogram_t = pytorch_utils.convert_mel_spec_t(mel_spectrogram)
             y_pred_cnn = model_CNN(mel_spectrogram_t)
             predictions = pytorch_utils.multilabel_predictions(y_pred_cnn)
             
-            col_manu.metric(label="Manufacturer", value=pytorch_utils.get_manufacturer_labels()[predictions[0].item()])
             col_guitar_type.metric(label="Guitar Type", value=pytorch_utils.get_guitar_type_labels()[predictions[1].item()])
             col_pickup.metric(label="Pickup", value=pytorch_utils.get_pickup_labels()[predictions[2].item()])
             col_pickup_position.metric(label="Pickup Position", value=pytorch_utils.get_pickup_position_labels()[predictions[3].item()])

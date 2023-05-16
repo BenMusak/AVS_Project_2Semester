@@ -26,29 +26,7 @@ class CNNClassifier(pl.LightningModule):
         self.relu = nn.ReLU()
         self.softmax = nn.Softmax(dim=1)
 
-        self.criterion = nn.CrossEntropyLoss()
-        
-        self.confmat_manufacturer = torchmetrics.ConfusionMatrix(num_classes = 7, task='multiclass') 
-        self.confmat_guitar_type = torchmetrics.ConfusionMatrix(num_classes = 4, task='multiclass')
-        self.confmat_pickup = torchmetrics.ConfusionMatrix(num_classes = 2, task='multiclass')
-        self.confmat_pickup_position = torchmetrics.ConfusionMatrix(num_classes = 3, task='multiclass')
-        self.confmat_strumming = torchmetrics.ConfusionMatrix(num_classes = 2, task='multiclass')
-        self.confmat_player = torchmetrics.ConfusionMatrix(num_classes = 6, task='multiclass')
-        
-        self.confusion_matrix_manufacturer = np.zeros((7, 7))
-        self.confusion_matrix_guitar_type = np.zeros((4,4))
-        self.confusion_matrix_pickup = np.zeros((2,2))
-        self.confusion_matrix_pickup_position = np.zeros((3,3))
-        self.confusion_matrix_strumming = np.zeros((2,2))
-        self.confusion_matrix_player = np.zeros((6,6))
-
-        self.test_loss = []
-        self.test_acc_manufacturer = []
-        self.test_acc_guitar = []
-        self.test_acc_pickup = []
-        self.test_acc_pickup_position = []
-        self.test_acc_strumming = []
-        self.test_acc_player = []
+        self.criterion = nn.CrossEntropyLoss()   
         
     def forward(self, x):
         x = self.relu(self.conv1(x))
@@ -75,13 +53,6 @@ class CNNClassifier(pl.LightningModule):
             losses += self.criterion(y_hats[key], ys[key])
         return losses
 
-    def multilabel_predictions(self, y_hats, ys):
-        predictions=[]
-        for i, key in enumerate(y_hats):
-            _, predicted=torch.max(y_hats[key], 1)
-            predictions.append(predicted)
-        return predictions
-
     def multilabel_accuracy(self, predictions, ys):
         accuracies=[]
         ys = list(ys.values()) #Dictionary to list
@@ -107,7 +78,7 @@ def get_strumming_labels():
     return ['Open','Amajor']
 
 def get_player_labels():
-    return ['JM', 'VS', 'BH', 'JG', 'KB']
+    return ['JM', 'VS', 'BH', 'JG', 'KB', 'JH']
 
 
 #######Labels -> Int####
@@ -136,4 +107,9 @@ def convert_mel_spec_t(mel_spec):
     mel_spec_t = torch.unsqueeze(mel_spec_t, dim=0)
     return mel_spec_t
 
-
+def multilabel_predictions(y_hats):
+    predictions=[]
+    for i, key in enumerate(y_hats):
+        _, predicted=torch.max(y_hats[key], 1)
+        predictions.append(predicted)
+    return predictions
