@@ -6,6 +6,9 @@ from pytorch_utils import CNNClassifier
 import torch
 from PIL import Image
 from torchvision.io import read_image, ImageReadMode
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
 
 def load_file(wav_path, sr):
     try: 
@@ -28,15 +31,13 @@ def convert_mfcc(y, sr, scaler_path):
     delta_mfcc = librosa.feature.delta(mfcc, order=1)
     delta2_mfcc = librosa.feature.delta(mfcc, order=2)
 
-    fig = visualize_MFCCs_Mel(mfcc, librosa.feature.melspectrogram(y=y, sr=sr, n_mels=128, fmax=8000), sr)
+    #fig = visualize_MFCCs_Mel(mfcc, librosa.feature.melspectrogram(y=y, sr=sr, n_mels=128, fmax=8000), sr)
 
     all_mfcc = np.concatenate([mfcc, delta_mfcc, delta2_mfcc])
     features = reshape_data(all_mfcc)
 
     mfccs.append(features)
     mfccs = np.asarray(mfccs)
-
-    print(mfccs.shape)
     
     # Scale the data to be between -1 and 1
     scaler = joblib.load(scaler_path)
@@ -44,7 +45,7 @@ def convert_mfcc(y, sr, scaler_path):
     # Transform the training and testing data
     x_test_scaled = scaler.transform(mfccs)
 
-    return x_test_scaled, mfccs, fig
+    return x_test_scaled, mfccs#, fig
 
 def convert_mel_spectrogram(y, sr):
     mel_spec = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=128)
@@ -136,7 +137,7 @@ def get_labels(label):
     elif label == 'strumming':
         label_strumming = {
             0 : 'Open',
-            1 : 'A-major'
+            1 : 'Amajor'
             }
         return label_strumming
 
@@ -151,3 +152,30 @@ def get_labels(label):
             5 : 'AL',
             }
         return label_player
+
+
+def get_reports(y_pred, y_test):
+
+    # Convert str to int for each label in y_pred and y_test
+    for i in range(len(y_pred)):
+        y_pred = [int(i) for i in y_pred[i]]
+        y_test = [int(i) for i in y_test[i]]
+
+    report_guitar_type = classification_report(y_test[0], y_pred[0])
+    report_pickup = classification_report(y_test[1], y_pred[1])
+    report_pickup_pos = classification_report(y_test[2], y_pred[2])
+    report_strumming = classification_report(y_test[3], y_pred[3])
+    report_play = classification_report(y_test[4], y_pred[4])
+    
+    return report_guitar_type, report_pickup, report_pickup_pos, report_strumming, report_play
+
+
+def get_predictions_binary(y_pred, y_test):
+
+    report_guitar_type = np.mean(y_test[0], y_pred[0])
+    report_pickup = np.mean(y_test[1], y_pred[1])
+    report_pickup_pos = np.mean(y_test[2], y_pred[2])
+    report_strumming = np.mean(y_test[3], y_pred[3])
+    report_play = np.mean(y_test[4], y_pred[4])
+
+    return report_guitar_type, report_pickup, report_pickup_pos, report_strumming, report_play
