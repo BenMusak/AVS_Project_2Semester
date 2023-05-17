@@ -153,6 +153,66 @@ def get_labels(label):
             }
         return label_player
 
+def get_labels_reverse(label):
+
+    if label == 'manufacturer':
+        label_manufacturer = {
+            'Gibson' : 0,
+            'Epiphone' : 1, 
+            'Supreme' : 2,
+            'Axtech' : 3,
+            'Fender' : 4,
+            'Hansen' : 5,
+            'Squier' : 6
+            }
+        return label_manufacturer
+
+    # label for dataset
+    elif label == 'guitar_type':
+        label_guitar_type = {
+            'LP' : 0,
+            'SG' : 1, 
+            'SC' : 2,
+            'TC' : 3
+            }
+        return label_guitar_type
+
+    # label for dataset
+    elif label == 'pickup':
+        label_pickup = {
+            'Humbucker' : 0,
+            'Single Coil' : 1
+            }
+        return label_pickup
+
+    # label for dataset
+    elif label == 'pickup_position':
+        label_pickup_position = {
+            'Bridge' : 0,
+            'Middle' : 1,
+            'Neck' : 2
+            }
+        return label_pickup_position
+
+    # label for dataset
+    elif label == 'strumming':
+        label_strumming = {
+            'Open' : 0,
+            'Amajor' : 1
+            }
+        return label_strumming
+
+    # label for dataset
+    elif label == 'player':
+        label_player = {
+            'JM' : 0,
+            'VS' : 1, 
+            'BH' : 2,
+            'JG' : 3,
+            'KB' : 4,
+            'AL' : 5
+            }
+        return label_player
 
 def get_reports(y_pred, y_test):
 
