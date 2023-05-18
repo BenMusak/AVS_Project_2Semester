@@ -214,28 +214,65 @@ def get_labels_reverse(label):
             }
         return label_player
 
+
 def get_reports(y_pred, y_test):
+    print(f'preds : {y_pred}')
+    print(f'test : {y_test}')
 
+    print(f'type of preds: {type(y_pred[0][0])}')
+    print(f'type of test: {type(y_test[0][0])}')
     # Convert str to int for each label in y_pred and y_test
-    for i in range(len(y_pred)):
-        y_pred = [int(i) for i in y_pred[i]]
-        y_test = [int(i) for i in y_test[i]]
+    print(f'----------------')
+    print(f'Are they equal length? : {len(y_pred) == len(y_test)}')
+    
+    #for i in range(len(y_pred)):
+        #print(f'----------------------')
+        #print(f'get reports : {i}')
+        #y_pred = [int(j) for j in y_pred[i]]
+        #y_test = [int(j) for j in y_test[i]]
+    
+    guitar_type_pred, guitar_type_true = [], []
+    pickup_pred, pickup_true = [], []
+    pickup_pos_pred, pickup_pos_true = [], []
+    strumming_pred, strumming_true = [], []
+    player_pred, player_true = [], []    
 
-    report_guitar_type = classification_report(y_test[0], y_pred[0])
-    report_pickup = classification_report(y_test[1], y_pred[1])
-    report_pickup_pos = classification_report(y_test[2], y_pred[2])
-    report_strumming = classification_report(y_test[3], y_pred[3])
-    report_play = classification_report(y_test[4], y_pred[4])
+    for i in range(len(y_pred)):
+        # guitar type - 0
+        guitar_type_pred.append(y_pred[i][0])
+        guitar_type_true.append(y_test[i][0])
+        
+        # pickup type - 1
+        pickup_pred.append(y_pred[i][1])
+        pickup_true.append(y_test[i][1])
+
+        # pickup position - 2
+        pickup_pos_pred.append(y_pred[i][2])
+        pickup_pos_true.append(y_test[i][2])
+
+        # strumming - 3
+        strumming_pred.append(y_pred[i][3])
+        strumming_true.append(y_test[i][3])
+
+        # player - 4
+        player_pred.append(y_pred[i][4])
+        player_true.append(y_test[i][4])
+
+
+    report_guitar_type = classification_report(guitar_type_true, guitar_type_pred, output_dict=True)
+    report_pickup = classification_report(pickup_true, pickup_pred, output_dict=True)
+    report_pickup_pos = classification_report(pickup_pos_true, pickup_pos_pred, output_dict=True)
+    report_strumming = classification_report(strumming_true, strumming_pred, output_dict=True)
+    report_play = classification_report(player_true, player_pred, output_dict=True)
     
     return report_guitar_type, report_pickup, report_pickup_pos, report_strumming, report_play
 
 
-def get_predictions_binary(y_pred, y_test):
-
-    report_guitar_type = np.mean(y_test[0], y_pred[0])
-    report_pickup = np.mean(y_test[1], y_pred[1])
-    report_pickup_pos = np.mean(y_test[2], y_pred[2])
-    report_strumming = np.mean(y_test[3], y_pred[3])
-    report_play = np.mean(y_test[4], y_pred[4])
+def get_predictions(y_pred):
+    report_guitar_type = int(y_pred[0])
+    report_pickup = int(y_pred[1])
+    report_pickup_pos = int(y_pred[2])
+    report_strumming = int(y_pred[3])
+    report_play = int(y_pred[4])
 
     return report_guitar_type, report_pickup, report_pickup_pos, report_strumming, report_play
