@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
-
+import plotly.express as px
 
 # page configuration
 page_icon = Image.open(r'app\mel_spec.jpg')
@@ -43,7 +43,6 @@ with header:
 
 with record: 
     rec_button = st.button('Record', key='audio-rec')
-    
     predict_folder = st.button("Predict from folder", key="predict-folder")
 
     if rec_button:
@@ -53,7 +52,6 @@ with record:
 
             # record audio
             r.record_audio(WAVE_PATH)
-
 
         with st.spinner("Removing Silience..."):
             # remove silence from record
@@ -76,7 +74,7 @@ with record:
             mel_spectrogram = utils.convert_mel_spectrogram(audio_data_mel, 48000)
 
             # LDA, KNN, and SVM section
-            st.subheader("KNN, SVM, and LDA")
+            st("KNN, SVM, and LDA")
             col_knn, col_svm, col_lda = st.columns(3)
 
             # Display the LDA model
@@ -87,7 +85,7 @@ with record:
                 y_pred_LDA = model_LDA.predict(unscaled_features)
                 labels = utils.get_labels(LABELS[i])
                 y_label_LDA = labels[y_pred_LDA[0]]
-                col_lda.metric(label="LDA model for {}".format(LABELS[i]), value=y_label_LDA)
+                col_lda.metric(label="LDA model for {}".format(LABELS[i]), percentage=y_label_LDA)
                 og_features, og_targets =  lda.load_dataset(DATASET_PATH[i])
 
                 if plot_LDA:
@@ -100,7 +98,7 @@ with record:
                 y_pred_knn = model_KNN.predict(features)
                 labels = utils.get_labels(LABELS[i])
                 y_label_knn = labels[y_pred_knn[0]]
-                col_knn.metric(label="KNN model for {}".format(LABELS[i]), value=y_label_knn)
+                col_knn.metric(label="KNN model for {}".format(LABELS[i]), percentage=y_label_knn)
 
             # SVM prediction
             for i, model_SVM in enumerate(models_SVM):
@@ -109,10 +107,10 @@ with record:
                 y_pred_svm = model_SVM.predict(features)
                 labels = utils.get_labels(LABELS[i])
                 y_label_svm = labels[y_pred_svm[0]]
-                col_svm.metric("SVM model for {}".format(LABELS[i]), value=y_label_svm)
+                col_svm.metric("SVM model for {}".format(LABELS[i]), percentage=y_label_svm)
 
             # CNN classification
-            st.subheader("CNN classifications")
+            st("CNN classifications")
             col_guitar_type, col_pickup = st.columns(2)
             col_pickup_position, col_strumming, col_player = st.columns(3)
             
@@ -120,16 +118,16 @@ with record:
             y_pred_cnn = model_CNN(mel_spectrogram_t)
             predictions = pytorch_utils.multilabel_predictions(y_pred_cnn)
             
-            col_guitar_type.metric(label="Guitar Type", value=pytorch_utils.get_guitar_type_labels()[predictions[1].item()])
-            col_pickup.metric(label="Pickup", value=pytorch_utils.get_pickup_labels()[predictions[2].item()])
-            col_pickup_position.metric(label="Pickup Position", value=pytorch_utils.get_pickup_position_labels()[predictions[3].item()])
-            col_strumming.metric(label="Strumming", value=pytorch_utils.get_strumming_labels()[predictions[4].item()])
-            col_player.metric(label="Player", value=pytorch_utils.get_player_labels()[predictions[5].item()])
+            col_guitar_type.metric(label="Guitar Type", percentage=pytorch_utils.get_guitar_type_labels()[predictions[1].item()])
+            col_pickup.metric(label="Pickup", percentage=pytorch_utils.get_pickup_labels()[predictions[2].item()])
+            col_pickup_position.metric(label="Pickup Position", percentage=pytorch_utils.get_pickup_position_labels()[predictions[3].item()])
+            col_strumming.metric(label="Strumming", percentage=pytorch_utils.get_strumming_labels()[predictions[4].item()])
+            col_player.metric(label="Player", percentage=pytorch_utils.get_player_labels()[predictions[5].item()])
 
 
     if predict_folder:
 
-        st.subheader("Predict from folder")
+        st.title("Predict from folder")
         #folder_path = st.text_input("Folder path", key="folder-path")
         #st.write(folder_path)
 
@@ -192,32 +190,12 @@ with record:
             # Load the CSV file with the correct labels
             df = pd.read_csv("app/metadata_jesper_testdata.csv", sep=";")
 
-            
-            # guitar type 
-            #guitar_type_labels = pd.factorize(df["guitar_type"])
-            #guitar_type_labels = utils.get_labels_reverse("guitar_type")
-            #df['guitar_type'] = df['guitar_type'].apply(lambda x : guitar_type_labels.get(x))
-
-            # pickup
-            #pickup_labels = pd.factorize(df["pickup"])
-            #pickup_labels = utils.get_labels_reverse("pickup")
-            #df['pickup'] = df['pickup'].apply(lambda x : pickup_labels.get(x))
-
-            # pickup position
-            #pickup_position_labels = pd.factorize(df["pickup_position"])
-            #pickup_position_labels = utils.get_labels_reverse("pickup_position")
-            #df['pickup_position'] = df['pickup'].apply(lambda x : pickup_labels.get(x))
-
             for label_type in LABELS:
                 label = utils.get_labels_reverse(label_type)
                 df[label_type] = df[label_type].apply(lambda x : label.get(x))
 
-            #strumming_labels = pd.factorize(df["strumming"])
-            #strumming_labels = utils.get_labels_reverse("strumming")
-            #player_labels = pd.factorize(df["player"])
-            #player_labels = utils.get_labels_reverse("player")
-
-            st.subheader("Accuracy")
+            
+            st.header("Scores")
             col_knn, col_svm, col_lda = st.columns(3)
 
             # Calculate the accuracy for each audio file
@@ -235,9 +213,6 @@ with record:
                 correct_labels = df[df["name"] == audio[0]]
                 correct_labels = correct_labels.drop(columns=["name"])
                 correct_labels = correct_labels.values.astype(int).tolist()[0]
-                
-                #correct_labels = np.array(correct_labels, dtype=np.float64)
-                #print(f'Correct labels  - np.array\n\ {correct_labels}')
                 correct_labels_all.append(correct_labels)
                 
                 # convert the predictions to a numpy array as int values for comparison with the correct labels
@@ -257,12 +232,78 @@ with record:
             LDA_report_guitar_type, LDA_report_pickup, LDA_report_pickup_pos, LDA_report_strumming, LDA_report_play = utils.get_reports(correct_labels_all, predictions_LDA)
 
             # Display the accuracy and f1-score for each model
-            acc_knn_guitar_type = KNN_report_guitar_type['accuracy'] * 100
-            col_knn.metric(label="KNN", value=acc_knn_guitar_type)
-            #col_knn.metric(label="KNN", value="F1-score: {:.2f} %".format(KNN_report_guitar_type["macro avg"]["f1-score"]*100))
-            #col_svm.metric(label="SVM", value="Accuracy: {:.2f} %".format(SVM_report_guitar_type["accuracy"]*100))
-            #col_svm.metric(label="SVM", value="F1-score: {:.2f} %".format(SVM_report_guitar_type["macro avg"]["f1-score"]*100))
-            #col_lda.metric(label="LDA", value="Accuracy: {:.2f} %".format(LDA_report_guitar_type["accuracy"]*100))
-            #col_lda.metric(label="LDA", value="F1-score: {:.2f} %".format(LDA_report_guitar_type["macro avg"]["f1-score"]*100))
+            print('-------------')
+            print(KNN_report_guitar_type)
+            print('-------------')
+            print(KNN_report_pickup)
+            print('-------------')
+            print(KNN_report_pickup_pos)
+            print('-------------')
+            print(KNN_report_strumming)
+            print('-------------')
+            print(KNN_report_play)
 
-                
+            guitar_type = ['LP', 'SG', 'SC', 'TC']
+            pickup = ['Humbucker', 'Single Coil']
+            pickup_pos = ['Bridge', 'Middle', 'Neck']
+            strumming = ['Open', 'A-major']
+            player = ['JM', 'VS', 'BH', 'JG', 'KB', 'AL']
+
+            
+            # score_type : precision, recall, f1-score
+            SCORE_TYPE = 'precision'
+
+            knn_guitar_type = utils.data_for_plot(KNN_report_guitar_type, guitar_type, SCORE_TYPE)
+            knn_pickup = utils.data_for_plot(KNN_report_pickup, pickup, SCORE_TYPE)
+            knn_pickup_pos = utils.data_for_plot(KNN_report_pickup_pos, pickup_pos, SCORE_TYPE)
+            knn_strumming = utils.data_for_plot(KNN_report_strumming, strumming, SCORE_TYPE)
+            knn_player = utils.data_for_plot(KNN_report_play, player, SCORE_TYPE)
+
+            svm_guitar_type = utils.data_for_plot(SVM_report_guitar_type, guitar_type, SCORE_TYPE)
+            svm_pickup = utils.data_for_plot(SVM_report_pickup, pickup, SCORE_TYPE)
+            svm_pickup_pos = utils.data_for_plot(SVM_report_pickup_pos, pickup_pos, SCORE_TYPE)
+            svm_strumming = utils.data_for_plot(SVM_report_strumming, strumming, SCORE_TYPE)
+            svm_player = utils.data_for_plot(SVM_report_play, player, SCORE_TYPE)
+
+            lda_guitar_type = utils.data_for_plot(LDA_report_guitar_type, guitar_type, SCORE_TYPE)
+            lda_pickup = utils.data_for_plot(LDA_report_pickup, pickup, SCORE_TYPE)
+            lda_pickup_pos = utils.data_for_plot(LDA_report_pickup_pos, pickup_pos, SCORE_TYPE)
+            lda_strumming = utils.data_for_plot(LDA_report_strumming, strumming, SCORE_TYPE)
+            lda_player = utils.data_for_plot(LDA_report_play, player, SCORE_TYPE)
+
+            col_knn.subheader('KNN')
+            col_knn.caption('Guitar type')
+            col_knn.bar_chart(data=knn_guitar_type, x='label', y='percentage')
+            col_knn.caption('Pickup')
+            col_knn.bar_chart(data=knn_pickup, x='label', y='percentage')
+            col_knn.caption('Pickup position')
+            col_knn.bar_chart(data=knn_pickup_pos, x='label', y='percentage')
+            col_knn.caption('Strumming')
+            col_knn.bar_chart(data=knn_strumming, x='label', y='percentage')
+            col_knn.caption('Player')
+            col_knn.bar_chart(data=knn_player, x='label', y='percentage')
+            
+            col_svm.subheader('SVM')
+            col_svm.caption('Guitar type')
+            col_svm.bar_chart(data=svm_guitar_type, x='label', y='percentage')
+            col_svm.caption('Pickup')
+            col_svm.bar_chart(data=svm_pickup, x='label', y='percentage')
+            col_svm.caption('Pickup position')
+            col_svm.bar_chart(data=svm_pickup_pos, x='label', y='percentage')
+            col_svm.caption('Strumming')
+            col_svm.bar_chart(data=svm_strumming, x='label', y='percentage')
+            col_svm.caption('Player')
+            col_svm.bar_chart(data=svm_player, x='label', y='percentage')
+
+            col_lda.subheader('LDA')
+            col_lda.caption('Guitar type')
+            col_lda.bar_chart(data=lda_guitar_type, x='label', y='percentage')
+            col_lda.caption('Pickup')
+            col_lda.bar_chart(data=lda_pickup, x='label', y='percentage')
+            col_lda.caption('Pickup position')
+            col_lda.bar_chart(data=lda_pickup_pos, x='label', y='percentage')
+            col_lda.caption('Strumming')
+            col_lda.bar_chart(data=lda_strumming, x='label', y='percentage')
+            col_lda.caption('Player')
+            col_lda.bar_chart(data=lda_player, x='label', y='percentage')
+

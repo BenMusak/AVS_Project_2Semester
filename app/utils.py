@@ -9,6 +9,7 @@ from torchvision.io import read_image, ImageReadMode
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
+import pandas as pd
 
 def load_file(wav_path, sr):
     try: 
@@ -216,21 +217,6 @@ def get_labels_reverse(label):
 
 
 def get_reports(y_pred, y_test):
-    print(f'preds : {y_pred}')
-    print(f'test : {y_test}')
-
-    print(f'type of preds: {type(y_pred[0][0])}')
-    print(f'type of test: {type(y_test[0][0])}')
-    # Convert str to int for each label in y_pred and y_test
-    print(f'----------------')
-    print(f'Are they equal length? : {len(y_pred) == len(y_test)}')
-    
-    #for i in range(len(y_pred)):
-        #print(f'----------------------')
-        #print(f'get reports : {i}')
-        #y_pred = [int(j) for j in y_pred[i]]
-        #y_test = [int(j) for j in y_test[i]]
-    
     guitar_type_pred, guitar_type_true = [], []
     pickup_pred, pickup_true = [], []
     pickup_pos_pred, pickup_pos_true = [], []
@@ -259,11 +245,11 @@ def get_reports(y_pred, y_test):
         player_true.append(y_test[i][4])
 
 
-    report_guitar_type = classification_report(guitar_type_true, guitar_type_pred, output_dict=True)
-    report_pickup = classification_report(pickup_true, pickup_pred, output_dict=True)
-    report_pickup_pos = classification_report(pickup_pos_true, pickup_pos_pred, output_dict=True)
-    report_strumming = classification_report(strumming_true, strumming_pred, output_dict=True)
-    report_play = classification_report(player_true, player_pred, output_dict=True)
+    report_guitar_type = classification_report(guitar_type_true, guitar_type_pred, output_dict=True, labels=[0, 1, 2, 3], target_names=['LP', 'SG', 'SC', 'TC'])
+    report_pickup = classification_report(pickup_true, pickup_pred, output_dict=True, labels=[0, 1], target_names=['Humbucker', 'Single Coil'])
+    report_pickup_pos = classification_report(pickup_pos_true, pickup_pos_pred, output_dict=True, labels=[0, 1, 2] , target_names=['Bridge', 'Middle', 'Neck'])
+    report_strumming = classification_report(strumming_true, strumming_pred, output_dict=True, labels=[0, 1],  target_names=['Open', 'A-major'])
+    report_play = classification_report(player_true, player_pred, output_dict=True, labels=[0, 1, 2, 3, 4, 5],target_names=['JM', 'VS', 'BH', 'JG', 'KB', 'AL'])
     
     return report_guitar_type, report_pickup, report_pickup_pos, report_strumming, report_play
 
@@ -276,3 +262,15 @@ def get_predictions(y_pred):
     report_play = int(y_pred[4])
 
     return report_guitar_type, report_pickup, report_pickup_pos, report_strumming, report_play
+
+def data_for_plot(report, report_type, score_type):
+    df = pd.DataFrame(columns=['label', 'percentage'])
+
+    for label in report_type:
+        df_row = pd.Series({
+            'label' : label,
+            'percentage' : report[label][score_type]
+                })
+        df = pd.concat([df, df_row.to_frame().T], ignore_index=True)
+        
+    return df
