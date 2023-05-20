@@ -44,9 +44,9 @@ def convert_mfcc(y, sr, scaler_path):
     scaler = joblib.load(scaler_path)
 
     # Transform the training and testing data
-    x_test_scaled = scaler.transform(mfccs)
+    #x_test_scaled = scaler.transform(mfccs)
 
-    return x_test_scaled, mfccs#, fig
+    return mfccs
 
 def convert_mel_spectrogram(y, sr):
     mel_spec = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=128)

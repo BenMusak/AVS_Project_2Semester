@@ -22,17 +22,19 @@ record = st.container() # record audio and show audio wave
 
 # Paths
 LABELS = ["guitar_type", "pickup", "pickup_position", "strumming", "player"]
-MODELS_PATH_KNN = ["models/KNN_model_{}.sav".format(label) for label in LABELS]
+#MODELS_PATH_KNN = ["models/KNN_model_{}.sav".format(label) for label in LABELS]
+MODELS_PATH_KNN = ["models/{}KNN_with_LDA.sav".format(label) for label in LABELS]
 models_KNN = [utils.load_model(MODEL_PATH_KNN, LABELS) for MODEL_PATH_KNN in MODELS_PATH_KNN]
-MODELS_PATH_SVM = ["models/SVM_model_{}.sav".format(label) for label in LABELS]
+#MODELS_PATH_SVM = ["models/SVM_model_{}.sav".format(label) for label in LABELS]
+MODELS_PATH_SVM = ["models/{}SVM_with_LDA.sav".format(label) for label in LABELS]
 models_SVM = [utils.load_model(MODEL_PATH_SVM, LABELS) for MODEL_PATH_SVM in MODELS_PATH_SVM]
 MODELS_PATH_LDA = ["models/LDA_model_{}.sav".format(label) for label in LABELS]
 models_LDA = [utils.load_model(MODEL_PATH_LDA, LABELS) for MODEL_PATH_LDA in MODELS_PATH_LDA]
 WAVE_PATH = r"record\output.wav"
 DATASET_PATH = ["models/fishers_dataset/{}_LDA_Fishers_train.npz".format(label) for label in LABELS]
-SCALAR_PATH = ["scaler_{}_KNN_without_LDA.pkl".format(label) for label in LABELS]
+SCALAR_PATH = ["scaler_{}_KNN_with_LDA.pkl".format(label) for label in LABELS]
 MODEL_PATH_CNN= r"models\CNN_model.ckpt"
-model_CNN = utils.load_CNN_model(MODEL_PATH_CNN) #load KNN model
+#model_CNN = utils.load_CNN_model(MODEL_PATH_CNN) #load KNN model
 plot_LDA = False
 #og_features, og_targets =  lda.load_dataset(DATASET_PATH)
 
@@ -131,7 +133,7 @@ with record:
         #folder_path = st.text_input("Folder path", key="folder-path")
         #st.write(folder_path)
 
-        folder_path = r'app\test_samples_quick'
+        folder_path = r'C:\Users\Benja\Aalborg Universitet\AVS - Semester 8 - Group 841 - Project\2. Data\1. Sound_samples\5. Full_recordings\All_data\Test_data\WAV\test_samples_quick'
 
         with st.spinner("Predicting labels..."):
             audio_pred = []
@@ -149,8 +151,8 @@ with record:
 
                     # Display the LDA model
                     for i, model_LDA in enumerate(models_LDA):
-                        scalar_name = "models/scalars/scaler_{}_KNN_without_LDA.pkl".format(LABELS[i])
-                        __, unscaled_features = utils.convert_mfcc(audio_data, sr, scalar_name)
+                        scalar_name = "models/scalars/scaler_{}_KNN_with_LDA.pkl".format(LABELS[i])
+                        unscaled_features = utils.convert_mfcc(audio_data, sr, scalar_name)
                         features_LDA = model_LDA.transform(unscaled_features)
                         y_pred_LDA = model_LDA.predict(unscaled_features)
                         #labels = utils.get_labels(LABELS[i])
@@ -159,22 +161,24 @@ with record:
                     
                     # kNN prediction
                     for i, model_KNN in enumerate(models_KNN):
-                        scalar_name = "models/scalars/scaler_{}_KNN_without_LDA.pkl".format(LABELS[i])
-                        features, unscaled_features = utils.convert_mfcc(audio_data, sr, scalar_name)
-                        y_pred_knn = model_KNN.predict(features)
+                        scalar_name = "models/scalars/scaler_{}_KNN_with_LDA.pkl".format(LABELS[i])
+                        unscaled_features = utils.convert_mfcc(audio_data, sr, scalar_name)
+                        features_LDA = models_LDA[i].transform(unscaled_features)
+                        y_pred_knn = model_KNN.predict(features_LDA)
                         #labels = utils.get_labels(LABELS[i])
                         y_label_knn = y_pred_knn[0]
                         KNN_predictions.append(y_label_knn)
                         
 
                     # SVM prediction
-                    for i, model_SVM in enumerate(models_SVM):
-                        scalar_name = "models/scalars/scaler_{}_KNN_without_LDA.pkl".format(LABELS[i])
-                        features, unscaled_features = utils.convert_mfcc(audio_data, sr, scalar_name)
-                        y_pred_svm = model_SVM.predict(features)
+                    #for i, model_SVM in enumerate(models_SVM):
+                    #    scalar_name = "models/scalars/scaler_{}_KNN_with_LDA.pkl".format(LABELS[i])
+                    #    unscaled_features = utils.convert_mfcc(audio_data, sr, scalar_name)
+                    #    features_LDA = models_LDA[i].transform(unscaled_features)
+                    #    y_pred_svm = model_SVM.predict(features_LDA)
                         #labels = utils.get_labels(LABELS[i])
-                        y_label_svm = y_pred_svm[0]
-                        SVM_predictions.append(y_label_svm)
+                    #    y_label_svm = y_pred_svm[0]
+                    #    SVM_predictions.append(y_label_svm)
 
                     # Add the predictions to the audio_pred list with the audio file name
                     audio_pred.append([audio_file, KNN_predictions, SVM_predictions, LDA_predictions])
@@ -217,18 +221,18 @@ with record:
                 
                 # convert the predictions to a numpy array as int values for comparison with the correct labels
                 KNN_report_guitar_type, KNN_report_pickup, KNN_report_pickup_pos, KNN_report_strumming, KNN_report_play = utils.get_predictions(audio[1])
-                SVM_report_guitar_type, SVM_report_pickup, SVM_report_pickup_pos, SVM_report_strumming, SVM_report_play = utils.get_predictions(audio[2])
+                #SVM_report_guitar_type, SVM_report_pickup, SVM_report_pickup_pos, SVM_report_strumming, SVM_report_play = utils.get_predictions(audio[2])
                 LDA_report_guitar_type, LDA_report_pickup, LDA_report_pickup_pos, LDA_report_strumming, LDA_report_play = utils.get_predictions(audio[3])
 
                 # Add the predictions to the list
                 predictions_KNN.append([KNN_report_guitar_type, KNN_report_pickup, KNN_report_pickup_pos, KNN_report_strumming, KNN_report_play])
-                predictions_SVM.append([SVM_report_guitar_type, SVM_report_pickup, SVM_report_pickup_pos, SVM_report_strumming, SVM_report_play])
+                #predictions_SVM.append([SVM_report_guitar_type, SVM_report_pickup, SVM_report_pickup_pos, SVM_report_strumming, SVM_report_play])
                 predictions_LDA.append([LDA_report_guitar_type, LDA_report_pickup, LDA_report_pickup_pos, LDA_report_strumming, LDA_report_play])
 
 
             # Get the report for each model
             KNN_report_guitar_type, KNN_report_pickup, KNN_report_pickup_pos, KNN_report_strumming, KNN_report_play = utils.get_reports(correct_labels_all, predictions_KNN)
-            SVM_report_guitar_type, SVM_report_pickup, SVM_report_pickup_pos, SVM_report_strumming, SVM_report_play = utils.get_reports(correct_labels_all, predictions_SVM)
+            #SVM_report_guitar_type, SVM_report_pickup, SVM_report_pickup_pos, SVM_report_strumming, SVM_report_play = utils.get_reports(correct_labels_all, predictions_SVM)
             LDA_report_guitar_type, LDA_report_pickup, LDA_report_pickup_pos, LDA_report_strumming, LDA_report_play = utils.get_reports(correct_labels_all, predictions_LDA)
 
             # Display the accuracy and f1-score for each model
@@ -259,11 +263,11 @@ with record:
             knn_strumming = utils.data_for_plot(KNN_report_strumming, strumming, SCORE_TYPE)
             knn_player = utils.data_for_plot(KNN_report_play, player, SCORE_TYPE)
 
-            svm_guitar_type = utils.data_for_plot(SVM_report_guitar_type, guitar_type, SCORE_TYPE)
-            svm_pickup = utils.data_for_plot(SVM_report_pickup, pickup, SCORE_TYPE)
-            svm_pickup_pos = utils.data_for_plot(SVM_report_pickup_pos, pickup_pos, SCORE_TYPE)
-            svm_strumming = utils.data_for_plot(SVM_report_strumming, strumming, SCORE_TYPE)
-            svm_player = utils.data_for_plot(SVM_report_play, player, SCORE_TYPE)
+            #svm_guitar_type = utils.data_for_plot(SVM_report_guitar_type, guitar_type, SCORE_TYPE)
+            #svm_pickup = utils.data_for_plot(SVM_report_pickup, pickup, SCORE_TYPE)
+            #svm_pickup_pos = utils.data_for_plot(SVM_report_pickup_pos, pickup_pos, SCORE_TYPE)
+            #svm_strumming = utils.data_for_plot(SVM_report_strumming, strumming, SCORE_TYPE)
+            #svm_player = utils.data_for_plot(SVM_report_play, player, SCORE_TYPE)
 
             lda_guitar_type = utils.data_for_plot(LDA_report_guitar_type, guitar_type, SCORE_TYPE)
             lda_pickup = utils.data_for_plot(LDA_report_pickup, pickup, SCORE_TYPE)
@@ -283,17 +287,17 @@ with record:
             col_knn.caption('Player')
             col_knn.bar_chart(data=knn_player, x='label', y='percentage')
             
-            col_svm.subheader('SVM')
-            col_svm.caption('Guitar type')
-            col_svm.bar_chart(data=svm_guitar_type, x='label', y='percentage')
-            col_svm.caption('Pickup')
-            col_svm.bar_chart(data=svm_pickup, x='label', y='percentage')
-            col_svm.caption('Pickup position')
-            col_svm.bar_chart(data=svm_pickup_pos, x='label', y='percentage')
-            col_svm.caption('Strumming')
-            col_svm.bar_chart(data=svm_strumming, x='label', y='percentage')
-            col_svm.caption('Player')
-            col_svm.bar_chart(data=svm_player, x='label', y='percentage')
+            #col_svm.subheader('SVM')
+            #col_svm.caption('Guitar type')
+            #col_svm.bar_chart(data=svm_guitar_type, x='label', y='percentage')
+            #col_svm.caption('Pickup')
+            #col_svm.bar_chart(data=svm_pickup, x='label', y='percentage')
+            #col_svm.caption('Pickup position')
+            #col_svm.bar_chart(data=svm_pickup_pos, x='label', y='percentage')
+            #col_svm.caption('Strumming')
+            #col_svm.bar_chart(data=svm_strumming, x='label', y='percentage')
+            #col_svm.caption('Player')
+            #col_svm.bar_chart(data=svm_player, x='label', y='percentage')
 
             col_lda.subheader('LDA')
             col_lda.caption('Guitar type')
